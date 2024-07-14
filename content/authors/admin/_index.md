@@ -41,7 +41,7 @@ education:
     institution: Delft University of Technology
     date_start: 2021-09-01
     date_end: 2024-07-01
-    summary: |
+    summary: 
       Thesis on _LLM of Babel:  Evaluation of LLMs on code for non-English use-cases_. Supervised by [Assistant Prof. Dr. Maliheh Izadi], [Prof. Dr. Arie van Deursen], and [ir. Jonathan Katzy].
       Courses included:
       - Multimedia Analysis (Image Processing, Medical Image Analysis, Computer Vision, Computer Graphics)
@@ -59,7 +59,7 @@ Internship:
     company_logo: ''
     date_start: 2023-04-30
     date_end: 2023-08-30
-    summary: |2-
+    summary: 
       Responsibilities include:
       - Build the next generation Online-Collaborative architecture design platform AlphaBuilt
       - Research on the combination of LLMs and architecture design
