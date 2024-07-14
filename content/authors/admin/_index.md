@@ -7,8 +7,8 @@ first_name: Yongcheng
 last_name: Huang
 
 # Status emoji
-status: 💻 
-  icon: 🎮
+status: ''
+  icon: ''
 
 # Is this the primary user of the site?
 superuser: true
