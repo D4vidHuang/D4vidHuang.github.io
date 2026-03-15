@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yongcheng Huang | AI & Software Engineering</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</head>
+<body>
+    
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">YH.</div>
+                <div class="links">
+                    <a href="#about">About</a>
+                    <a href="#vision">Vision</a>
+                    <a href="#research">Research</a>
+                    <a href="#projects">Projects</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <section id="hero">
+                <canvas id="bg-canvas"></canvas>
+                <div class="hero-content">
+                    <h1 class="glitch" data-text="Yongcheng Huang">Yongcheng Huang</h1>
+                    <h2 class="subtitle">黄永橙</h2>
+                    <p class="tagline">MSc Student in TUDelft, AISE Lab.<br>Research Interests: <span class="highlight">LLM4Code</span>, <span class="highlight">LLM</span> and <span class="highlight">AGI</span>.</p>
+                </div>
+                
+                <!-- Diffusion Code Animation -->
+                <div class="diffusion-canvas-container">
+                    <canvas id="diffusion-canvas"></canvas>
+                    <div class="diffusion-hint">
+                        <span>Move mouse to denoise</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- News Ticker Removed -->
+
+            <section id="about">
+                <div class="section-header">
+                    <h3>// About Me</h3>
+                </div>
+                <div class="two-column-layout">
+                    <div class="col-left">
+                        <p class="intro-text">I am a MSc student in the <strong>Software Engineering Research Group (SERG)</strong> at <strong>Delft University of Technology</strong>. My research focuses on the intersection of <strong>Software Engineering</strong> and <strong>Artificial Intelligence</strong>, specifically exploring how Large Language Models can revolutionize software development.</p>
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <span class="stat-number">3+</span>
+                                <span class="stat-label">Years Research</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">4</span>
+                                <span class="stat-label">Publications</span>
+                            </div>
+                        </div>
+                        <br>
+                        <a href="#" class="btn btn-primary">Download CV</a>
+                    </div>
+                    <div class="col-right">
+                        <!-- Education Timeline Simplified -->
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <span class="year">2023 - Present</span>
+                                <div class="content">
+                                    <h4>MSc Data Science & AI</h4>
+                                    <span>TU Delft</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <span class="year">2019 - 2023</span>
+                                <div class="content">
+                                    <h4>BSc Computer Science</h4>
+                                    <span>TU Delft</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="research">
+                <div class="section-header">
+                    <h3>// Research Interests</h3>
+                </div>
+                <div class="research-interests-container">
+                    <div class="interest-pill">Artificial Intelligence</div>
+                    <div class="interest-pill">Software Engineering</div>
+                    <div class="interest-pill">Large Language Models</div>
+                    <div class="interest-pill">Generative Models</div>
+                    <div class="interest-pill">LLM Applications</div>
+                    <div class="interest-pill">ML for SE</div>
+                    <div class="interest-pill">AGI</div>
+                </div>
+
+                <div class="section-header" style="margin-top: 60px;">
+                    <h3>// Featured Researches</h3>
+                </div>
+                <div class="research-list">
+
+                    <section id="dllm-animation" class="dllm-container">
+                        <div class="dllm-content-wrapper">
+                            <div class="dllm-header">
+                                <h4>CoRefusion: DLLM Code Denoising Visualization</h4>
+                                <p>Scroll to visualize the denoising process of a Large Language Model</p>
+                            </div>
+                            
+                            <div class="dllm-viz-area">
+                                <div class="step-indicator">
+                                    <span id="step-label" class="step-label">Diffusion Step = 64</span>
+                                </div>
+                                
+                                <div class="code-window">
+                                    <div class="code-header">
+                                        <div class="window-controls">
+                                            <div class="control-dot red"></div>
+                                            <div class="control-dot yellow"></div>
+                                            <div class="control-dot green"></div>
+                                        </div>
+                                        <div class="filename">attention.py</div>
+                                    </div>
+                                    <div class="code-content" id="code-content">
+                                        <!-- Lines will be injected here -->
+                                    </div>
+                                </div>
+
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+
+                                <div class="legend">
+                                    <div class="legend-item">
+                                        <span class="legend-tok" style="background:rgba(255,255,255,0.05);border:1.5px dashed rgba(255,255,255,0.2);color:#888">[M]</span>
+                                        masked
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-tok" style="background:rgba(168,85,247,0.15);border-color:#a855f7;color:#c084fc">abc</span>
+                                        low confidence
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-tok" style="background:rgba(45,212,191,0.15);border-color:#2dd4bf;color:#5eead4">abc</span>
+                                        committed
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-tok" style="background:rgba(239,68,68,0.2);border-color:#ef4444;color:#fca5a5">[EOS]</span>
+                                        end of text
+                                    </div>
+                                </div>
+
+                                <div class="scroll-hint">
+                                    <div class="mouse-icon">
+                                        <div class="mouse-wheel"></div>
+                                    </div>
+                                    <span>Scroll to Denoise</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="research-item">
+                        <div class="image-placeholder"></div>
+                        <h4>A Qualitative Investigation into LLM-Generated Multilingual Code Comments and Automatic Evaluation Metrics</h4>
+                        <span class="meta">@Promise2025</span>
+                        <p>This study evaluates code LLMs for multilingual comment generation, reveals evaluation biases in non-English languages, and offers an open-source dataset for improvement.</p>
+                    </div>
+
+                    <div class="research-item">
+                        <div class="image-placeholder"></div>
+                        <h4>LLM of Babel: Evaluation of LLMs on code for non-English use-cases</h4>
+                        <span class="meta">Under Review</span>
+                        <p>This study evaluates the performance of LLMs in generating Chinese Java code comments, introduces a detailed error taxonomy, and demonstrates that cosine similarity of word embeddings can help automatically detect semantic errors like hallucinations.</p>
+                    </div>
+
+                    <div class="research-item">
+                        <div class="image-placeholder"></div>
+                        <h4>ToBeContinued: A Smart Trigger Model for Code Completions</h4>
+                        <span class="meta">Preprint</span>
+                        <p>In this paper, we propose an intelligent trigger model that combines rule-based filtering with deep learning on telemetry and code context data to efficiently decide when to invoke a large language model for code completion, reducing unnecessary computations while enhancing developer productivity.</p>
+                    </div>
+
+                    <div class="research-item">
+                        <div class="image-placeholder"></div>
+                        <h4>Dfusion: CVPR2025@NTIRE Workshop, world rank 13</h4>
+                        <span class="meta">CVPR 2025 Workshop</span>
+                        <p>The Dfusion structure is modeled after the Mixture of Experts concept of LLM, which integrates the results of learning multiple SOTA models and achieves results that surpass the current SOTA through extremely lightweight CNN and extremely low training load.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="projects">
+                <h3>// Projects</h3>
+                <div class="project-list">
+                    <div class="project-item">
+                        <div class="image-placeholder"></div>
+                        <h4>Alpha-built</h4>
+                        <p>Alpha-built is designed to be next generation of online, multi-worker, light-weight architecture design platform. With git like version control system, we are able to empower the future of architecture design.</p>
+                    </div>
+
+                    <div class="project-item">
+                        <div class="image-placeholder"></div>
+                        <h4>LPCV2023</h4>
+                        <p>During this challenge, we implemented a method of implementing segmentation tasks in Jetson Nano with only 5w power consumption.</p>
+                    </div>
+
+                    <div class="project-item">
+                        <div class="image-placeholder"></div>
+                        <h4>Green LLAMA</h4>
+                        <p>Green Llama is a tool that monitors the energy and environmental impact of LLMs—tracking CPU, GPU, and RAM usage—to help optimize efficiency and reduce carbon emissions.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="achievements">
+                <h3>// Achievements</h3>
+                <div class="medal-wall">
+                    <!-- Placeholders for medals -->
+                    <div class="medal">
+                        <div class="medal-icon">🥇</div>
+                        <div class="medal-title">Medal Placeholder</div>
+                    </div>
+                    <div class="medal">
+                        <div class="medal-icon">🥈</div>
+                        <div class="medal-title">Medal Placeholder</div>
+                    </div>
+                    <div class="medal">
+                        <div class="medal-icon">🥉</div>
+                        <div class="medal-title">Medal Placeholder</div>
+                    </div>
+                    <div class="medal">
+                        <div class="medal-icon">🏆</div>
+                        <div class="medal-title">Award Placeholder</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contact">
+                <h3>// Connect</h3>
+                <div class="social-links">
+                    <a href="https://github.com/D4vidHuang" target="_blank" class="btn">GitHub</a>
+                    <a href="mailto:Y.Huang-51@student.tudelft.nl" class="btn">Email</a>
+                    <a href="#" class="btn">LinkedIn</a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Yongcheng Huang. Designed with AI.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

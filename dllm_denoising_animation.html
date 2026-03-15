@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLLM Code Denoising Animation</title>
+    <style>
+        :root {
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+            --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --color-background-primary: #ffffff;
+            --color-background-secondary: #f8fafc;
+            --color-border-secondary: #e2e8f0;
+            --color-border-tertiary: #cbd5e1;
+            --color-text-primary: #0f172a;
+            --color-text-secondary: #334155;
+            --color-text-tertiary: #64748b;
+            --color-accent: #6366f1;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #fff;
+            font-family: var(--font-sans);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .step-indicator {
+            font-family: var(--font-serif);
+            font-size: 24px;
+            font-style: italic;
+            color: var(--color-text-tertiary);
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .step-label {
+            transition: opacity 0.2s;
+        }
+
+        .code-window {
+            width: 95%;
+            background: var(--color-background-secondary);
+            border: 1px solid var(--color-border-tertiary);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-bottom: 1px solid var(--color-border-secondary);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .control-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .control-dot.red { background: #ef4444; }
+        .control-dot.yellow { background: #f59e0b; }
+        .control-dot.green { background: #22c55e; }
+
+        .filename {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: var(--color-text-tertiary);
+            font-weight: 500;
+            margin-right: 42px;
+        }
+
+        .code-content {
+            padding: 24px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.8;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .code-line {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            min-height: 24px; /* Ensure empty lines don't collapse */
+        }
+        
+        .indent-1 { margin-left: 24px; }
+        .indent-2 { margin-left: 48px; }
+
+        .tok {
+            padding: 2px 4px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            text-align: center;
+            min-width: 16px;
+            /* Faster transition for smooth scrolling interaction */
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: inline-block;
+            white-space: pre;
+            transform-origin: center;
+            backface-visibility: hidden;
+        }
+        
+        /* Token Styles */
+        .tok-normal {
+            background: transparent;
+            border-color: transparent;
+            color: var(--color-text-primary);
+        }
+        
+        .tok-keyword {
+            color: #d946ef; /* pink */
+            font-weight: bold;
+        }
+
+        .tok-func {
+            color: #3b82f6; /* blue */
+        }
+        
+        .tok-class {
+            color: #eab308; /* yellow */
+        }
+        
+        .tok-eos {
+            background: #fecaca; /* red-200 */
+            border: 1px solid #f87171; /* red-400 */
+            color: #b91c1c; /* red-700 */
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .tok-masked {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            border-style: dashed;
+            color: #94a3b8;
+            font-size: 12px;
+            min-width: 24px;
+        }
+
+        .tok-confident {
+            background: #ede9fe;
+            border-color: #a78bfa;
+            border-style: solid;
+            color: #5b21b6;
+            font-weight: 500;
+        }
+
+        .tok-fixed {
+            background: #ccfbf1;
+            border-color: #2dd4bf;
+            border-style: solid;
+            color: #0f766e;
+            font-weight: 500;
+        }
+        
+        .tok-blur {
+            filter: blur(2px);
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        /* Hidden tokens after EOS */
+        .tok-hidden {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+
+        .scroll-hint {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-text-tertiary);
+            font-size: 13px;
+            opacity: 0.8;
+            animation: bounce 2s infinite;
+        }
+        
+        .mouse-icon {
+            width: 24px;
+            height: 36px;
+            border: 2px solid var(--color-border-tertiary);
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .mouse-wheel {
+            width: 4px;
+            height: 6px;
+            background: var(--color-border-tertiary);
+            border-radius: 2px;
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scrollWheel 1.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+            60% { transform: translateY(-3px); }
+        }
+        
+        @keyframes scrollWheel {
+            0% { transform: translate(-50%, 0); opacity: 1; }
+            100% { transform: translate(-50%, 12px); opacity: 0; }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            margin-top: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--color-accent);
+            width: 0%;
+            transition: width 0.1s linear; /* Fast update for scroll */
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--color-text-secondary);
+        }
+
+        .legend-tok {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 0.5px solid;
+            font-family: var(--font-mono);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="scroll-container">
+        <div class="step-indicator">
+            <span id="step-label" class="step-label">Diffusion Step = 64</span>
+        </div>
+        
+        <div class="code-window">
+            <div class="code-header">
+                <div class="window-controls">
+                    <div class="control-dot red"></div>
+                    <div class="control-dot yellow"></div>
+                    <div class="control-dot green"></div>
+                </div>
+                <div class="filename">attention.py</div>
+            </div>
+            <div class="code-content" id="code-content">
+                <!-- Lines will be injected here -->
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-tok" style="background:#e2e8f0;border:1.5px dashed #94a3b8;color:#94a3b8">[M]</span>
+                masked
+            </div>
+            <div class="legend-item">
+                <span class="legend-tok" style="background:#ede9fe;border-color:#a78bfa;color:#5b21b6">abc</span>
+                low confidence
+            </div>
+            <div class="legend-item">
+                <span class="legend-tok" style="background:#ccfbf1;border-color:#2dd4bf;color:#0f766e">abc</span>
+                committed
+            </div>
+            <div class="legend-item">
+                <span class="legend-tok" style="background:#fecaca;border-color:#f87171;color:#b91c1c">[EOS]</span>
+                end of text
+            </div>
+        </div>
+
+        <div class="scroll-hint">
+            <div class="mouse-icon">
+                <div class="mouse-wheel"></div>
+            </div>
+            <span>Scroll to Denoise</span>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Define Final Code Structure (with extra placeholders for length variation) ---
+        // The real code ends at "return context".
+        // We append extra dummy lines that will eventually be cut off by [EOS].
+        
+        const realCode = [
+            [
+                {t:"def", k:"tok-keyword"}, {t:"scaled_dot_product_attention", k:"tok-fixed"}, {t:"(", k:"tok-normal"}, 
+                {t:"query", k:"tok-fixed"}, {t:",", k:"tok-normal"}, {t:"key", k:"tok-fixed"}, {t:",", k:"tok-normal"}, 
+                {t:"value", k:"tok-fixed"}, {t:"):", k:"tok-normal"}
+            ],
+            [
+                {t:"d_k", k:"tok-fixed"}, {t:"=", k:"tok-normal"}, {t:"query", k:"tok-fixed"}, {t:".", k:"tok-normal"}, 
+                {t:"shape", k:"tok-normal"}, {t:"[", k:"tok-normal"}, {t:"-1", k:"tok-normal"}, {t:"]", k:"tok-normal"}
+            ],
+            [
+                {t:"scores", k:"tok-fixed"}, {t:"=", k:"tok-normal"}, {t:"torch", k:"tok-normal"}, {t:".", k:"tok-normal"}, 
+                {t:"matmul", k:"tok-normal"}, {t:"(", k:"tok-normal"}, {t:"query", k:"tok-fixed"}, {t:",", k:"tok-normal"}, 
+                {t:"key", k:"tok-fixed"}, {t:".", k:"tok-normal"}, {t:"transpose", k:"tok-normal"}, {t:"(", k:"tok-normal"}, 
+                {t:"-2", k:"tok-normal"}, {t:",", k:"tok-normal"}, {t:"-1", k:"tok-normal"}, {t:")", k:"tok-normal"}, {t:")", k:"tok-normal"}
+            ],
+            [
+                {t:"scale", k:"tok-fixed"}, {t:"=", k:"tok-normal"}, {t:"math", k:"tok-normal"}, {t:".", k:"tok-normal"}, 
+                {t:"sqrt", k:"tok-normal"}, {t:"(", k:"tok-normal"}, {t:"d_k", k:"tok-fixed"}, {t:")", k:"tok-normal"}
+            ],
+            [
+                {t:"attn_weights", k:"tok-fixed"}, {t:"=", k:"tok-normal"}, {t:"torch", k:"tok-normal"}, {t:".", k:"tok-normal"}, 
+                {t:"softmax", k:"tok-normal"}, {t:"(", k:"tok-normal"}, {t:"scores", k:"tok-fixed"}, {t:"/", k:"tok-normal"}, 
+                {t:"scale", k:"tok-fixed"}, {t:",", k:"tok-normal"}, {t:"dim", k:"tok-normal"}, {t:"=", k:"tok-normal"}, 
+                {t:"-1", k:"tok-normal"}, {t:")", k:"tok-normal"}
+            ],
+            [
+                {t:"context", k:"tok-fixed"}, {t:"=", k:"tok-normal"}, {t:"torch", k:"tok-normal"}, {t:".", k:"tok-normal"}, 
+                {t:"matmul", k:"tok-normal"}, {t:"(", k:"tok-normal"}, {t:"attn_weights", k:"tok-fixed"}, {t:",", k:"tok-normal"}, 
+                {t:"value", k:"tok-fixed"}, {t:")", k:"tok-normal"}
+            ],
+            [
+                {t:"return", k:"tok-keyword"}, {t:"context", k:"tok-fixed"}
+            ],
+            [
+                {t:"[EOS]", k:"tok-eos"} // The True EOS
+            ]
+        ];
+
+        // Extra dummy lines that will exist in MASK form but disappear
+        const dummyLines = [
+            [ {t:"print", k:"tok-normal"}, {t:"(", k:"tok-normal"}, {t:"context", k:"tok-normal"}, {t:")", k:"tok-normal"} ],
+            [ {t:"#", k:"tok-normal"}, {t:"End", k:"tok-normal"}, {t:"of", k:"tok-normal"}, {t:"function", k:"tok-normal"} ],
+            [ {t:"pass", k:"tok-keyword"} ]
+        ];
+        
+        // Flatten for easier index calculation
+        // But we need to keep line structure for rendering.
+        // Let's attach line index to each token
+        
+        const fullStructure = [...realCode, ...dummyLines];
+
+        // --- 2. Step Generation Logic ---
+        const TOTAL_STEPS = 64;
+        
+        function randStr(len) {
+            const chars = "abcdefghijklmnopqrstuvwxyz";
+            let s = "";
+            for(let i=0; i<len; i++) s += chars[Math.floor(Math.random()*chars.length)];
+            return s;
+        }
+
+        function noisyVar(target) {
+            const noiseTypes = [
+                () => target.substring(0, 2) + randStr(2),
+                () => "var_" + randStr(2),
+                () => randStr(target.length)
+            ];
+            return noiseTypes[Math.floor(Math.random() * noiseTypes.length)]();
+        }
+
+        // Generate the timeline for each token
+        const tokenTimelines = [];
+        
+        // We need to track where the "True EOS" is
+        let trueEOSLineIdx = realCode.length - 1; 
+        let trueEOSTokIdx = 0;
+
+        fullStructure.forEach((line, lineIdx) => {
+            const lineTimeline = [];
+            line.forEach((tok, tokIdx) => {
+                let isTrueEOS = (lineIdx === trueEOSLineIdx && tokIdx === trueEOSTokIdx);
+                let isDummy = lineIdx > trueEOSLineIdx;
+                
+                let isFixedVar = tok.k === "tok-fixed"; 
+                let isConfidentVar = tok.k === "tok-confident";
+                
+                let revealStep = Math.floor(Math.random() * (TOTAL_STEPS * 0.6));
+                let refineStep = revealStep;
+                let intermediate = "";
+
+                if (isTrueEOS) {
+                    // True EOS logic:
+                    // It should struggle a bit? Or just appear?
+                    // Let's make it appear somewhat early to trigger truncation
+                    revealStep = Math.floor(Math.random() * 20); // Appear in first 20 steps
+                    refineStep = revealStep;
+                } else if (isDummy) {
+                    // Dummy tokens:
+                    // They exist as MASKs initially.
+                    // They might "hallucinate" some text before being cut off by EOS.
+                    revealStep = Math.floor(Math.random() * (TOTAL_STEPS * 0.5));
+                    refineStep = revealStep + 20; // Stay noisy
+                    intermediate = randStr(5);
+                } else if (isFixedVar) {
+                    const earlyBirdChance = Math.random();
+                    if (earlyBirdChance < 0.3) {
+                         revealStep = Math.floor(Math.random() * 15);
+                         refineStep = revealStep + Math.floor(Math.random() * 5);
+                    } else {
+                         refineStep = Math.floor(revealStep + Math.random() * (TOTAL_STEPS - revealStep));
+                    }
+                    intermediate = noisyVar(tok.t);
+                } else {
+                    revealStep = Math.floor(Math.random() * (TOTAL_STEPS * 0.8));
+                    refineStep = revealStep;
+                }
+
+                lineTimeline.push({
+                    final: tok,
+                    revealAt: revealStep,
+                    refineAt: refineStep,
+                    intermediateText: intermediate,
+                    isTrueEOS: isTrueEOS,
+                    isDummy: isDummy
+                });
+            });
+            tokenTimelines.push(lineTimeline);
+        });
+
+        // Precompute steps
+        const steps = [];
+        
+        // Random EOS hallucinations
+        // We want [EOS] tokens to pop up randomly in the dummy region during early steps
+        // And then disappear.
+        
+        for (let s = 0; s <= TOTAL_STEPS; s++) {
+            const stepLines = [];
+            
+            // Check if True EOS is revealed in this step
+            // Actually, we determine truncation based on whether True EOS is revealed
+            let trueEOSRevealed = false;
+            
+            // First pass: generate tokens
+            tokenTimelines.forEach((lineTL, lIdx) => {
+                const stepLine = [];
+                lineTL.forEach((tl, tIdx) => {
+                    let currentTok = { text: "", type: "", isHidden: false };
+                    
+                    if (tl.isTrueEOS && s >= tl.revealAt) {
+                        trueEOSRevealed = true;
+                    }
+                    
+                    if (s < tl.revealAt) {
+                        currentTok.text = "[MASK]";
+                        currentTok.type = "tok-masked";
+                        
+                        // Random EOS hallucination in dummy regions or MASK regions
+                        // Only in early steps (t=64...t=40)
+                        // Inverse logic: s is 0..64. Early steps = s is small.
+                        if (s < 20 && Math.random() < 0.02) { 
+                             currentTok.text = "[EOS]";
+                             currentTok.type = "tok-eos";
+                        }
+                        
+                    } else if (s < tl.refineAt) {
+                        currentTok.text = tl.intermediateText || randStr(4);
+                        currentTok.type = "tok-confident";
+                    } else {
+                        currentTok.text = tl.final.t;
+                        currentTok.type = tl.final.k;
+                    }
+                    
+                    stepLine.push(currentTok);
+                });
+                stepLines.push(stepLine);
+            });
+            
+            // Second pass: apply truncation if True EOS is visible
+            // Logic: if True EOS is visible at this step, everything AFTER it should be hidden
+            // But we want a "dynamic" effect where multiple EOS might compete?
+            // For now, let's implement the "Autoregressive Length Determination" effect:
+            // Once the True EOS settles, the tail is cut.
+            
+            if (trueEOSRevealed) {
+                let cutoff = false;
+                for(let l=0; l<stepLines.length; l++) {
+                    for(let t=0; t<stepLines[l].length; t++) {
+                        if (cutoff) {
+                            stepLines[l][t].isHidden = true;
+                            stepLines[l][t].type = "tok-hidden";
+                        }
+                        if (stepLines[l][t].text === "[EOS]" && stepLines[l][t].type === "tok-eos") {
+                            // Only cut if it's the *True* EOS location? 
+                            // Or any EOS?
+                            // Let's say any settled EOS cuts the sequence.
+                            // But for animation stability, let's stick to True EOS logic derived above.
+                            // We know where True EOS is: lineIdx=6, tokIdx=0 of that line (approx)
+                            // Actually, let's just use the flag we computed.
+                            
+                            // If this specific token is the True EOS and it is revealed:
+                            if (l === trueEOSLineIdx && t === trueEOSTokIdx) {
+                                cutoff = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            const t_val = TOTAL_STEPS - s;
+            steps.push({
+                label: `Diffusion Step = ${t_val}`,
+                lines: stepLines
+            });
+        }
+
+        // --- 3. Rendering ---
+        const codeContent = document.getElementById('code-content');
+        const stepLabel = document.getElementById('step-label');
+        const progressFill = document.getElementById('progress-fill');
+
+        let currentStepIndex = 0;
+        let scrollAccumulator = 0;
+        const SCROLL_SENSITIVITY = 25; 
+
+        function init() {
+            // Render initial structure (Step 0) - Fully Masked usually
+            // We need to render the FULL structure including dummies initially
+            
+            // Note: steps[0] has the full structure.
+            steps[0].lines.forEach((lineData, lineIdx) => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'code-line' + (lineIdx > 0 ? ' indent-1' : ''); 
+                
+                lineData.forEach(() => {
+                    const span = document.createElement('span');
+                    span.className = 'tok';
+                    lineDiv.appendChild(span);
+                });
+                
+                codeContent.appendChild(lineDiv);
+            });
+
+            renderStep(0);
+            
+            window.addEventListener('wheel', handleScroll, { passive: false });
+        }
+
+        function renderStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex > TOTAL_STEPS) return;
+
+            const stepData = steps[stepIndex];
+            stepLabel.textContent = stepData.label;
+
+            const lineElements = codeContent.children;
+            
+            stepData.lines.forEach((lineData, lineIdx) => {
+                const lineEl = lineElements[lineIdx];
+                const tokenElements = lineEl.children;
+                
+                lineData.forEach((tokenData, tokIdx) => {
+                    if (tokenElements[tokIdx]) {
+                        const el = tokenElements[tokIdx];
+                        
+                        el.textContent = tokenData.text;
+                        
+                        // Handle hiding
+                        if (tokenData.isHidden) {
+                            el.className = 'tok tok-hidden';
+                        } else {
+                            el.className = `tok ${tokenData.type}`;
+                        }
+                    }
+                });
+            });
+
+            const progress = (stepIndex / TOTAL_STEPS) * 100;
+            progressFill.style.width = `${progress}%`;
+            currentStepIndex = stepIndex;
+        }
+
+        function handleScroll(e) {
+            e.preventDefault(); 
+            scrollAccumulator += e.deltaY;
+
+            if (Math.abs(scrollAccumulator) > SCROLL_SENSITIVITY) {
+                const stepsToMove = Math.floor(scrollAccumulator / SCROLL_SENSITIVITY);
+                if (stepsToMove !== 0) {
+                    let nextStep = currentStepIndex + stepsToMove;
+                    nextStep = Math.max(0, Math.min(TOTAL_STEPS, nextStep));
+                    if (nextStep !== currentStepIndex) renderStep(nextStep);
+                    scrollAccumulator = scrollAccumulator % SCROLL_SENSITIVITY;
+                }
+            }
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
