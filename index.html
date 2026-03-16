@@ -108,13 +108,83 @@
                 </div>
                 <div class="research-list">
 
-                    <section id="dllm-animation" class="dllm-container">
-                        <div class="dllm-content-wrapper">
-                            <div class="dllm-left-panel">
-                                <span class="research-tag">MSc Thesis</span>
-                                <div class="dllm-header">
-                                    <h4>CoReFusion</h4>
-                                    <p class="dllm-subtitle">Refactoring as Denoising?</p>
+                    <!-- Thumbnail Cards for Animations -->
+                    <div class="animation-thumbnail" data-animation="corefusion">
+                        <canvas class="thumbnail-canvas" id="thumb-corefusion"></canvas>
+                        <div class="thumbnail-info">
+                            <span class="research-tag">MSc Thesis</span>
+                            <h4>CoReFusion</h4>
+                            <p>Refactoring as Denoising?</p>
+                        </div>
+                        <div class="thumbnail-hint">Click to explore</div>
+                    </div>
+
+                    <div class="animation-thumbnail" data-animation="dfusion">
+                        <canvas class="thumbnail-canvas" id="thumb-dfusion"></canvas>
+                        <div class="thumbnail-info">
+                            <span class="research-tag workshop-tag">Workshop</span>
+                            <h4>NTIRE@CVPR 2025</h4>
+                            <p>Team TUDelft Dfusion</p>
+                        </div>
+                        <div class="thumbnail-hint">Click to explore</div>
+                    </div>
+
+                    <div class="animation-thumbnail" data-animation="taxonomy">
+                        <canvas class="thumbnail-canvas" id="thumb-taxonomy"></canvas>
+                        <div class="thumbnail-info">
+                            <span class="research-tag publication-tag">Publication</span>
+                            <h4>Multilingual Code Comments</h4>
+                            <p>LLM Error Taxonomy Study</p>
+                        </div>
+                        <div class="thumbnail-hint">Click to explore</div>
+                    </div>
+
+                    <div class="animation-thumbnail" data-animation="babel">
+                        <canvas class="thumbnail-canvas" id="thumb-babel"></canvas>
+                        <div class="thumbnail-info">
+                            <span class="research-tag thesis-tag">BSc Thesis</span>
+                            <h4>LLM of Babel</h4>
+                            <p>Multilingual Code Evaluation</p>
+                        </div>
+                        <div class="thumbnail-hint">Click to explore</div>
+                    </div>
+
+                    <div class="animation-thumbnail" data-animation="coverage">
+                        <canvas class="thumbnail-canvas" id="thumb-coverage"></canvas>
+                        <div class="thumbnail-info">
+                            <span class="research-tag honor-tag">Honor Program</span>
+                            <h4>Language Coverage</h4>
+                            <p>Grammar-Based LLM Analysis</p>
+                        </div>
+                        <div class="thumbnail-hint">Click to explore</div>
+                    </div>
+
+                    <div class="research-item">
+                        <h4>ToBeContinued: A Smart Trigger Model for Code Completions</h4>
+                        <span class="meta">Preprint</span>
+                        <p>In this paper, we propose an intelligent trigger model that combines rule-based filtering with deep learning on telemetry and code context data to efficiently decide when to invoke a large language model for code completion, reducing unnecessary computations while enhancing developer productivity.</p>
+                    </div>
+                </div>
+
+                <!-- Animation Modal Overlay -->
+                <div class="animation-modal" id="animation-modal">
+                    <div class="modal-close" id="modal-close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </div>
+                    <div class="modal-content">
+                        <!-- CoReFusion Animation -->
+                        <div class="modal-animation" id="modal-corefusion">
+                            <div class="modal-left">
+                                <div class="modal-header">
+                                    <span class="research-tag">MSc Thesis</span>
+                                    <h2>CoReFusion</h2>
+                                    <p class="modal-subtitle">Refactoring as Denoising?</p>
+                                </div>
+                                <div class="modal-abstract">
+                                    <p>[Abstract placeholder: This section will contain the research abstract describing the CoReFusion approach to code refactoring using diffusion language models. The methodology treats code refactoring as a denoising process, iteratively transforming noisy code into clean, refactored versions.]</p>
                                 </div>
                                 <div class="step-indicator">
                                     <span id="step-label" class="step-label">Steps to Diffuse = 64</span>
@@ -144,10 +214,10 @@
                                     <div class="mouse-icon">
                                         <div class="mouse-wheel"></div>
                                     </div>
-                                    <span>Scroll to Denoise</span>
+                                    <span>Scroll wheel to Denoise</span>
                                 </div>
                             </div>
-                            <div class="dllm-right-panel">
+                            <div class="modal-right">
                                 <div class="code-window">
                                     <div class="code-header">
                                         <div class="window-controls">
@@ -158,29 +228,21 @@
                                         <div class="filename">attention.py</div>
                                     </div>
                                     <div class="code-content" id="code-content">
-                                        <!-- Lines will be injected here -->
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </section>
 
-                    <!-- CVPR Workshop Dfusion Visualization -->
-                    <section id="dfusion-animation" class="dllm-container">
-                        <div class="dllm-content-wrapper">
-                            <div class="dfusion-left-panel">
-                                <div class="dfusion-image-container">
-                                    <canvas id="dfusion-canvas"></canvas>
+                        <!-- Dfusion Animation -->
+                        <div class="modal-animation" id="modal-dfusion" style="display:none;">
+                            <div class="modal-left">
+                                <div class="modal-header">
+                                    <span class="research-tag workshop-tag">Workshop</span>
+                                    <h2>NTIRE@CVPR 2025</h2>
+                                    <p class="modal-subtitle">Team TUDelft Dfusion</p>
                                 </div>
-                                <div class="dfusion-hint">
-                                    <span>Hover to deblur · Click & drag to restore</span>
-                                </div>
-                            </div>
-                            <div class="dllm-left-panel">
-                                <span class="research-tag workshop-tag">Workshop</span>
-                                <div class="dllm-header">
-                                    <h4>NTIRE@CVPR 2025</h4>
-                                    <p class="dllm-subtitle">Team TUDelft Dfusion</p>
+                                <div class="modal-abstract">
+                                    <p>[Abstract placeholder: This section will contain the research abstract describing the Dfusion approach for image restoration. The method combines multiple state-of-the-art models using a Mixture of Experts architecture, achieving competitive results with minimal computational overhead.]</p>
                                 </div>
                                 <div class="dfusion-rank">
                                     <span class="rank-number">13</span>
@@ -191,17 +253,26 @@
                                     <p class="slogan-en">Clear sight, any distance, any light.</p>
                                 </div>
                             </div>
+                            <div class="modal-right">
+                                <div class="dfusion-image-container">
+                                    <canvas id="dfusion-canvas"></canvas>
+                                </div>
+                                <div class="dfusion-hint">
+                                    <span>Hover to deblur · Click & drag to restore</span>
+                                </div>
+                            </div>
                         </div>
-                    </section>
 
-                    <!-- Promise2025 Error Taxonomy Visualization -->
-                    <section id="taxonomy-animation" class="dllm-container">
-                        <div class="dllm-content-wrapper">
-                            <div class="dllm-left-panel">
-                                <span class="research-tag publication-tag">Publication</span>
-                                <div class="dllm-header">
-                                    <h4>Multilingual Code Comments</h4>
-                                    <p class="dllm-subtitle">LLM Error Taxonomy Study</p>
+                        <!-- Taxonomy Animation -->
+                        <div class="modal-animation" id="modal-taxonomy" style="display:none;">
+                            <div class="modal-left">
+                                <div class="modal-header">
+                                    <span class="research-tag publication-tag">Publication</span>
+                                    <h2>Multilingual Code Comments</h2>
+                                    <p class="modal-subtitle">LLM Error Taxonomy Study</p>
+                                </div>
+                                <div class="modal-abstract">
+                                    <p>[Abstract placeholder: This section will contain the research abstract describing the qualitative investigation into LLM-generated multilingual code comments. The study reveals evaluation biases in non-English languages and provides an open-source dataset for improvement.]</p>
                                 </div>
                                 <div class="taxonomy-stats">
                                     <div class="taxonomy-stat">
@@ -218,39 +289,109 @@
                                     <span class="taxonomy-lang-item" data-lang="polish">PL</span>
                                 </div>
                                 <div class="taxonomy-category-summary" id="taxonomy-summary">
-                                    <!-- Generated by JS -->
                                 </div>
                             </div>
-                            <div class="taxonomy-right-panel">
+                            <div class="modal-right taxonomy-right-panel">
                                 <div class="taxonomy-tree" id="taxonomy-tree">
-                                    <!-- Tree will be generated by JS -->
                                 </div>
                             </div>
                         </div>
-                    </section>
 
-                    <div class="research-item">
-                        <h4>A Qualitative Investigation into LLM-Generated Multilingual Code Comments and Automatic Evaluation Metrics</h4>
-                        <span class="meta">@Promise2025</span>
-                        <p>This study evaluates code LLMs for multilingual comment generation, reveals evaluation biases in non-English languages, and offers an open-source dataset for improvement.</p>
-                    </div>
+                        <!-- Babel Animation -->
+                        <div class="modal-animation" id="modal-babel" style="display:none;">
+                            <div class="modal-left">
+                                <div class="modal-header">
+                                    <span class="research-tag thesis-tag">BSc Thesis</span>
+                                    <h2>LLM of Babel</h2>
+                                    <p class="modal-subtitle">Evaluation of LLMs on Code for Non-English Use-cases</p>
+                                </div>
+                                <div class="modal-abstract">
+                                    <p>After the emergence of BERT, Large Language Models have demonstrated remarkable multilingual capabilities. However, current evaluations primarily focus on English use cases. This study assesses LLM performance in generating Chinese Java code comments through open coding, revealing the prevalence of semantic errors (especially hallucinations) while showing an absence of grammatical issues due to Chinese language characteristics. We also validated the potential for quantitatively analyzing semantic errors using cosine similarity of word embeddings.</p>
+                                </div>
+                                <div class="babel-stats">
+                                    <div class="babel-stat">
+                                        <span class="stat-value">379</span>
+                                        <span class="stat-desc">Error Labels</span>
+                                    </div>
+                                    <div class="babel-stat">
+                                        <span class="stat-value">300</span>
+                                        <span class="stat-desc">Comments Analyzed</span>
+                                    </div>
+                                </div>
+                                <div class="babel-legend">
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #8b5cf6"></span>
+                                        <span>SE: Semantic Errors</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #ef4444"></span>
+                                        <span>MS: Model-specific Errors</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #06b6d4"></span>
+                                        <span>ST: Syntax Errors</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #f59e0b"></span>
+                                        <span>LG: Linguistic Errors (0 in Chinese)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-right">
+                                <div class="babel-visualization">
+                                    <canvas id="babel-canvas"></canvas>
+                                </div>
+                                <div class="babel-hint">
+                                    <span>Hover over bars to see error breakdown</span>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="research-item">
-                        <h4>LLM of Babel: Evaluation of LLMs on code for non-English use-cases</h4>
-                        <span class="meta">BSc Thesis</span>
-                        <p>This study evaluates the performance of LLMs in generating Chinese Java code comments, introduces a detailed error taxonomy, and demonstrates that cosine similarity of word embeddings can help automatically detect semantic errors like hallucinations.</p>
-                    </div>
-
-                    <div class="research-item">
-                        <h4>ToBeContinued: A Smart Trigger Model for Code Completions</h4>
-                        <span class="meta">Preprint</span>
-                        <p>In this paper, we propose an intelligent trigger model that combines rule-based filtering with deep learning on telemetry and code context data to efficiently decide when to invoke a large language model for code completion, reducing unnecessary computations while enhancing developer productivity.</p>
-                    </div>
-
-                    <div class="research-item">
-                        <h4>Dfusion: CVPR2025@NTIRE Workshop, world rank 13</h4>
-                        <span class="meta">CVPR 2025 Workshop</span>
-                        <p>The Dfusion structure is modeled after the Mixture of Experts concept of LLM, which integrates the results of learning multiple SOTA models and achieves results that surpass the current SOTA through extremely lightweight CNN and extremely low training load.</p>
+                        <!-- Coverage Animation -->
+                        <div class="modal-animation" id="modal-coverage" style="display:none;">
+                            <div class="modal-left">
+                                <div class="modal-header">
+                                    <span class="research-tag honor-tag">Honor Program</span>
+                                    <h2>Language Coverage Statistics</h2>
+                                    <p class="modal-subtitle">Grammar-Based Analysis of Code-Generating LLMs</p>
+                                </div>
+                                <div class="modal-abstract">
+                                    <p>This research proposes a shift to a structured, grammar-based methodology for measuring linguistic coverage of code-generating LLMs. By using formal grammars as a definitive checklist, we analyze code corpora to create linguistic coverage reports, revealing representational imbalances where a few simple constructs dominate while complex features exist in a long tail. We also quantify the "tokenization offset" between grammar-based and token-based decompositions.</p>
+                                </div>
+                                <div class="coverage-stats">
+                                    <div class="coverage-stat">
+                                        <span class="stat-value">9M</span>
+                                        <span class="stat-desc">Files Analyzed</span>
+                                    </div>
+                                    <div class="coverage-stat">
+                                        <span class="stat-value">9</span>
+                                        <span class="stat-desc">Languages</span>
+                                    </div>
+                                </div>
+                                <div class="coverage-legend">
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #22c55e"></span>
+                                        <span>High Frequency Rules</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #f59e0b"></span>
+                                        <span>Medium Frequency</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #ef4444"></span>
+                                        <span>Long Tail (Rare)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-right">
+                                <div class="coverage-visualization">
+                                    <canvas id="coverage-canvas"></canvas>
+                                </div>
+                                <div class="coverage-hint">
+                                    <span>Hover to explore grammar rules · Click language to switch</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

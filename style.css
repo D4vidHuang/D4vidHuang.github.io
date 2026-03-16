@@ -1226,3 +1226,383 @@ footer {
     min-width: 40px;
     text-align: right;
 }
+
+/* =========================================
+   Animation Thumbnail Cards
+   ========================================= */
+.animation-thumbnail {
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.animation-thumbnail:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.animation-thumbnail:hover .thumbnail-hint {
+    opacity: 1;
+}
+
+.thumbnail-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.thumbnail-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(transparent, rgba(10, 10, 10, 0.98) 40%);
+    z-index: 1;
+}
+
+.thumbnail-info .research-tag {
+    background: rgba(168, 85, 247, 0.9);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+}
+
+.thumbnail-info .workshop-tag {
+    background: rgba(45, 212, 191, 0.9);
+    color: #0a0a0a;
+}
+
+.thumbnail-info .publication-tag {
+    background: rgba(239, 68, 68, 0.9);
+    color: #fff;
+}
+
+.thumbnail-info .thesis-tag {
+    background: rgba(96, 165, 250, 0.9);
+    color: #fff;
+}
+
+.thumbnail-info h4 {
+    font-size: 1.2rem;
+    color: #f0f0f0;
+    margin: 10px 0 4px;
+    font-weight: 600;
+}
+
+.thumbnail-info p {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin: 0;
+}
+
+.thumbnail-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #f0f0f0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+}
+
+/* =========================================
+   Animation Modal Overlay
+   ========================================= */
+.animation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.98);
+    z-index: 1000;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow-y: auto;
+}
+
+.animation-modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-close {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    color: #888;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f0f0f0;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 40px;
+}
+
+.modal-animation {
+    display: flex;
+    gap: 60px;
+    min-height: calc(100vh - 160px);
+    align-items: flex-start;
+}
+
+.modal-left {
+    flex: 0 0 380px;
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.modal-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.modal-header h2 {
+    font-size: 2.5rem;
+    color: #f0f0f0;
+    margin: 12px 0 8px;
+    font-weight: 600;
+    letter-spacing: -1px;
+}
+
+.modal-subtitle {
+    font-size: 1.1rem;
+    color: #888;
+    font-style: italic;
+}
+
+.modal-abstract {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    border-left: 3px solid rgba(94, 234, 212, 0.5);
+}
+
+.modal-abstract p {
+    font-size: 0.95rem;
+    color: #aaa;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* Modal Dfusion specific */
+.modal-animation .dfusion-image-container {
+    width: 100%;
+    max-width: none;
+    aspect-ratio: 16 / 9;
+}
+
+.modal-animation .dfusion-hint {
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* Modal Taxonomy specific */
+.modal-right.taxonomy-right-panel {
+    max-height: calc(100vh - 200px);
+}
+
+/* =========================================
+   Babel Visualization (LLM of Babel)
+   ========================================= */
+.thesis-tag {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: #60a5fa;
+    color: #93c5fd;
+}
+
+.babel-stats {
+    display: flex;
+    gap: 40px;
+}
+
+.babel-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.babel-stat .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #60a5fa;
+    line-height: 1;
+}
+
+.babel-stat .stat-desc {
+    font-size: 0.75rem;
+    color: var(--secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.babel-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.babel-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.babel-legend .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.babel-visualization {
+    width: 100%;
+    aspect-ratio: 1.6 / 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#babel-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.babel-hint {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.75rem;
+    color: var(--secondary-color);
+    opacity: 0.7;
+}
+
+/* =========================================
+   Coverage Visualization (Honor Program)
+   ========================================= */
+.honor-tag {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: #a855f7;
+    color: #c084fc;
+}
+
+.thumbnail-info .honor-tag {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: #a855f7;
+    color: #c084fc;
+}
+
+.coverage-stats {
+    display: flex;
+    gap: 40px;
+}
+
+.coverage-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.coverage-stat .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #a855f7;
+    line-height: 1;
+}
+
+.coverage-stat .stat-desc {
+    font-size: 0.75rem;
+    color: var(--secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.coverage-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.coverage-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.coverage-legend .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.coverage-visualization {
+    width: 100%;
+    aspect-ratio: 1.6 / 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#coverage-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.coverage-hint {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.75rem;
+    color: var(--secondary-color);
+    opacity: 0.7;
+}

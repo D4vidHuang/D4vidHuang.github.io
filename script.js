@@ -1,5 +1,420 @@
 gsap.registerPlugin(ScrollTrigger);
 
+// =========================================
+// Thumbnail Canvas Animation - Research Specific
+// =========================================
+function initThumbnailCanvas(canvasId, type) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    let animationId;
+    let time = 0;
+
+    if (type === 'corefusion') {
+        // CoReFusion: Code denoising visualization
+        const codeLines = [
+            { text: 'def attention(q, k, v):', color: '#c084fc' },
+            { text: '    scores = matmul(q, k)', color: '#5eead4' },
+            { text: '    weights = softmax(scores)', color: '#5eead4' },
+            { text: '    return matmul(weights, v)', color: '#5eead4' },
+        ];
+        const noiseChars = '█▓▒░';
+        let noiseLevel = 0.8;
+        let direction = -0.001; // Slowed down from -0.005
+
+        function animate() {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+
+            // Oscillate noise level (slower)
+            noiseLevel += direction;
+            if (noiseLevel <= 0.1) direction = 0.0008; // Slowed down
+            if (noiseLevel >= 0.9) direction = -0.001; // Slowed down
+
+            ctx.font = '11px "Courier New", monospace';
+            const lineHeight = 22;
+            const startY = 25;
+            const startX = 15;
+
+            codeLines.forEach((line, idx) => {
+                const y = startY + idx * lineHeight;
+                let x = startX;
+
+                for (let i = 0; i < line.text.length; i++) {
+                    const char = line.text[i];
+                    // Use deterministic noise based on position, not random each frame
+                    const noiseThreshold = (Math.sin(i * 0.5 + idx * 2 + time * 0.02) + 1) / 2;
+                    const shouldNoise = noiseThreshold < noiseLevel && char !== ' ';
+
+                    if (shouldNoise) {
+                        ctx.fillStyle = `rgba(136, 136, 136, ${0.3 + noiseThreshold * 0.4})`;
+                        const noiseIdx = Math.floor((i + idx + Math.floor(time * 0.05)) % noiseChars.length);
+                        ctx.fillText(noiseChars[noiseIdx], x, y);
+                    } else {
+                        ctx.fillStyle = line.color;
+                        ctx.fillText(char, x, y);
+                    }
+                    x += ctx.measureText(char).width;
+                }
+            });
+
+            // Draw step indicator
+            ctx.fillStyle = '#5eead4';
+            ctx.font = '10px "Space Grotesk", sans-serif';
+            ctx.fillText(`t = ${Math.floor((1 - noiseLevel) * 64)}`, rect.width - 45, 18);
+
+            time++;
+            animationId = requestAnimationFrame(animate);
+        }
+        animate();
+
+    } else if (type === 'dfusion') {
+        // Dfusion: Day/Night image restoration
+        const pixelSize = 8;
+        const cols = Math.floor(rect.width / pixelSize);
+        const rows = Math.floor(rect.height / pixelSize);
+        let pixels = [];
+
+        // Create pixel grid with day/night split
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const isNight = col >= cols / 2;
+                const isRaindrop = Math.random() < 0.15;
+                pixels.push({
+                    x: col * pixelSize,
+                    y: row * pixelSize,
+                    isNight,
+                    isRaindrop,
+                    baseColor: isNight
+                        ? `hsl(220, 30%, ${10 + row / rows * 20}%)`
+                        : `hsl(200, 60%, ${40 + row / rows * 30}%)`,
+                    dropColor: isNight ? '#334' : '#89a',
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function animate() {
+            time += 0.03;
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+
+            pixels.forEach(p => {
+                const wave = Math.sin(time + p.phase) * 0.5 + 0.5;
+                if (p.isRaindrop && wave > 0.6) {
+                    ctx.fillStyle = p.dropColor;
+                } else {
+                    ctx.fillStyle = p.baseColor;
+                }
+                ctx.fillRect(p.x, p.y, pixelSize - 1, pixelSize - 1);
+            });
+
+            // Draw divider and labels
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(rect.width / 2, 0);
+            ctx.lineTo(rect.width / 2, rect.height);
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '9px "Space Grotesk", sans-serif';
+            ctx.fillText('DAY', 8, 14);
+            ctx.fillText('NIGHT', rect.width / 2 + 8, 14);
+
+            animationId = requestAnimationFrame(animate);
+        }
+        animate();
+
+    } else if (type === 'taxonomy') {
+        // Taxonomy: Error category bar chart
+        const categories = [
+            { name: 'MS', value: 5007, color: '#ef4444' },
+            { name: 'LG', value: 1728, color: '#f59e0b' },
+            { name: 'SE', value: 8333, color: '#8b5cf6' },
+            { name: 'ST', value: 84, color: '#06b6d4' }
+        ];
+        const maxVal = Math.max(...categories.map(c => c.value));
+        const barWidth = (rect.width - 60) / categories.length - 10;
+        const maxBarHeight = rect.height - 50;
+
+        function animate() {
+            time += 0.02;
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+
+            categories.forEach((cat, idx) => {
+                const x = 30 + idx * (barWidth + 10);
+                const targetHeight = (cat.value / maxVal) * maxBarHeight;
+                const wave = Math.sin(time + idx * 0.5) * 5;
+                const height = targetHeight + wave;
+                const y = rect.height - 25 - height;
+
+                // Bar with gradient
+                const gradient = ctx.createLinearGradient(x, y, x, rect.height - 25);
+                gradient.addColorStop(0, cat.color);
+                gradient.addColorStop(1, cat.color + '40');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, barWidth, height);
+
+                // Label
+                ctx.fillStyle = '#888';
+                ctx.font = '9px "Space Grotesk", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(cat.name, x + barWidth / 2, rect.height - 10);
+
+                // Value on top
+                ctx.fillStyle = cat.color;
+                ctx.font = '8px "Courier New", monospace';
+                ctx.fillText(cat.value.toLocaleString(), x + barWidth / 2, y - 5);
+            });
+
+            ctx.textAlign = 'left';
+            animationId = requestAnimationFrame(animate);
+        }
+        animate();
+
+    } else if (type === 'babel') {
+        // Babel: Multilingual code comments cycling through languages
+        const comments = [
+            { lang: 'ZH', text: '// 计算两数之和', flag: '🇨🇳' },
+            { lang: 'NL', text: '// Bereken de som', flag: '🇳🇱' },
+            { lang: 'PL', text: '// Oblicz sumę', flag: '🇵🇱' },
+            { lang: 'EL', text: '// Υπολογίστε το άθροισμα', flag: '🇬🇷' },
+            { lang: 'EN', text: '// Calculate the sum', flag: '🇬🇧' },
+        ];
+        let currentLangIdx = 0;
+        let phase = 0;
+        let lastSwitch = 0;
+
+        function animate() {
+            time += 0.02;
+            phase = (phase + 0.012) % 1;
+
+            // Switch language every ~3 seconds
+            if (time - lastSwitch > 3) {
+                lastSwitch = time;
+                currentLangIdx = (currentLangIdx + 1) % comments.length;
+                phase = 0;
+            }
+
+            const currentComment = comments[currentLangIdx];
+
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+
+            // Draw code background
+            ctx.fillStyle = 'rgba(30, 30, 40, 0.8)';
+            ctx.fillRect(10, 15, rect.width - 20, 35);
+
+            // Draw Java code line
+            ctx.font = '10px "Courier New", monospace';
+            ctx.fillStyle = '#c084fc';
+            ctx.fillText('public', 15, 30);
+            ctx.fillStyle = '#5eead4';
+            ctx.fillText(' int add(a, b)', 50, 30);
+
+            // Draw comment being generated with noise effect
+            ctx.fillStyle = 'rgba(30, 30, 40, 0.8)';
+            ctx.fillRect(10, 55, rect.width - 20, 30);
+
+            // Language indicator
+            ctx.fillStyle = '#888';
+            ctx.font = '9px "Space Grotesk", sans-serif';
+            ctx.fillText(currentComment.lang, rect.width - 30, 68);
+
+            ctx.font = '10px "Courier New", monospace';
+            let x = 15;
+            const commentChars = currentComment.text.split('');
+            commentChars.forEach((char, i) => {
+                const revealThreshold = phase * commentChars.length * 1.5;
+                if (i < revealThreshold) {
+                    ctx.fillStyle = '#888';
+                    ctx.fillText(char, x, 72);
+                } else {
+                    ctx.fillStyle = 'rgba(136, 136, 136, 0.3)';
+                    ctx.fillText('█', x, 72);
+                }
+                x += ctx.measureText(char).width;
+            });
+
+            // Draw error indicator bars at bottom
+            const barY = rect.height - 12;
+            const barWidth = (rect.width - 30) / 3;
+            const errorTypes = ['SE', 'MS', 'LG'];
+            errorTypes.forEach((type, i) => {
+                const barX = 15 + i * (barWidth + 5);
+                const colors = { 'SE': '#8b5cf6', 'MS': '#ef4444', 'LG': '#f59e0b' };
+                const heights = { 'SE': 0.6, 'MS': 0.35, 'LG': 0.05 };
+                const wave = Math.sin(time + i) * 0.05;
+
+                ctx.fillStyle = colors[type] + '40';
+                ctx.fillRect(barX, barY - 8, barWidth - 5, 8);
+                ctx.fillStyle = colors[type];
+                ctx.fillRect(barX, barY - 8, (barWidth - 5) * (heights[type] + wave), 8);
+            });
+
+            animationId = requestAnimationFrame(animate);
+        }
+        animate();
+
+    } else if (type === 'coverage') {
+        // Coverage: Treemap-style grammar rule visualization
+        const rules = [
+            { name: 'identifier', freq: 0.42, color: '#22c55e' },
+            { name: 'expression', freq: 0.28, color: '#22c55e' },
+            { name: 'string', freq: 0.15, color: '#f59e0b' },
+            { name: 'call_expr', freq: 0.08, color: '#f59e0b' },
+            { name: 'for_stmt', freq: 0.04, color: '#ef4444' },
+            { name: 'lambda', freq: 0.02, color: '#ef4444' },
+            { name: 'context_mgr', freq: 0.01, color: '#ef4444' },
+        ];
+
+        function animate() {
+            time += 0.02;
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+
+            // Draw treemap-style blocks
+            let x = 8;
+            let y = 8;
+            const maxWidth = rect.width - 16;
+            const maxHeight = rect.height - 30;
+            let rowHeight = 0;
+
+            rules.forEach((rule, idx) => {
+                const wave = Math.sin(time + idx * 0.5) * 2;
+                const blockWidth = Math.max(20, rule.freq * maxWidth * 1.5 + wave);
+                const blockHeight = Math.max(15, rule.freq * maxHeight * 0.8);
+
+                if (x + blockWidth > maxWidth + 8) {
+                    x = 8;
+                    y += rowHeight + 4;
+                    rowHeight = 0;
+                }
+
+                rowHeight = Math.max(rowHeight, blockHeight);
+
+                // Block with gradient
+                const gradient = ctx.createLinearGradient(x, y, x + blockWidth, y + blockHeight);
+                gradient.addColorStop(0, rule.color + '60');
+                gradient.addColorStop(1, rule.color + '20');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, blockWidth - 2, blockHeight - 2);
+
+                // Border
+                ctx.strokeStyle = rule.color + '80';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, blockWidth - 2, blockHeight - 2);
+
+                // Label for larger blocks
+                if (blockWidth > 35 && blockHeight > 18) {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '7px "Courier New", monospace';
+                    ctx.fillText(rule.name.substring(0, 6), x + 3, y + 11);
+                }
+
+                x += blockWidth;
+            });
+
+            // Bottom label
+            ctx.fillStyle = '#666';
+            ctx.font = '8px "Space Grotesk", sans-serif';
+            ctx.fillText('Grammar Coverage Distribution', 8, rect.height - 6);
+
+            animationId = requestAnimationFrame(animate);
+        }
+        animate();
+    }
+
+    return () => cancelAnimationFrame(animationId);
+}
+
+// Initialize all thumbnail canvases
+document.addEventListener('DOMContentLoaded', () => {
+    initThumbnailCanvas('thumb-corefusion', 'corefusion');
+    initThumbnailCanvas('thumb-dfusion', 'dfusion');
+    initThumbnailCanvas('thumb-taxonomy', 'taxonomy');
+    initThumbnailCanvas('thumb-babel', 'babel');
+    initThumbnailCanvas('thumb-coverage', 'coverage');
+});
+
+// =========================================
+// Modal Interaction
+// =========================================
+const modal = document.getElementById('animation-modal');
+const modalClose = document.getElementById('modal-close');
+const thumbnails = document.querySelectorAll('.animation-thumbnail');
+let currentAnimation = null;
+
+function openModal(animationType) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Hide all animations
+    document.querySelectorAll('.modal-animation').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // Show selected animation
+    const targetModal = document.getElementById(`modal-${animationType}`);
+    if (targetModal) {
+        targetModal.style.display = 'flex';
+    }
+
+    currentAnimation = animationType;
+
+    // Initialize the animation
+    if (animationType === 'corefusion') {
+        initDLLMAnimation();
+    } else if (animationType === 'dfusion') {
+        initDfusionAnimation();
+    } else if (animationType === 'taxonomy') {
+        initTaxonomyVisualization();
+    } else if (animationType === 'babel') {
+        initBabelVisualization();
+    } else if (animationType === 'coverage') {
+        initCoverageVisualization();
+    }
+}
+
+function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    currentAnimation = null;
+}
+
+thumbnails.forEach(thumb => {
+    thumb.addEventListener('click', () => {
+        const animationType = thumb.dataset.animation;
+        openModal(animationType);
+    });
+});
+
+if (modalClose) {
+    modalClose.addEventListener('click', closeModal);
+}
+
+if (modal) {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+}
+
+// ESC key to close
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+        closeModal();
+    }
+});
+
 // Background Particle Animation (Restricted to Hero Section)
 const bgCanvas = document.getElementById('bg-canvas');
 const heroSection = document.getElementById('hero');
@@ -664,88 +1079,95 @@ for (let s = 0; s <= TOTAL_STEPS; s++) {
     });
 }
 
-// --- 3. Rendering & ScrollTrigger Integration ---
-const codeContent = document.getElementById('code-content');
-const stepLabel = document.getElementById('step-label');
-const progressFill = document.getElementById('progress-fill');
+// --- 3. Rendering for Modal ---
+// Wrap DLLM init in a function for modal
+let dllmInitialized = false;
+function initDLLMAnimation() {
+    if (dllmInitialized) return;
+    dllmInitialized = true;
 
-function initDLLM() {
-    if (!codeContent) return; // Guard clause if element not found
+    const codeContent = document.getElementById('code-content');
+    const stepLabel = document.getElementById('step-label');
+    const progressFill = document.getElementById('progress-fill');
+
+    if (!codeContent) return;
 
     // Render initial structure (Step 0)
+    codeContent.innerHTML = '';
     steps[0].lines.forEach((lineData, lineIdx) => {
         const lineDiv = document.createElement('div');
-        lineDiv.className = 'code-line' + (lineIdx > 0 ? ' indent-1' : ''); 
-        
+        lineDiv.className = 'code-line' + (lineIdx > 0 ? ' indent-1' : '');
+
         lineData.forEach(() => {
             const span = document.createElement('span');
             span.className = 'tok';
             lineDiv.appendChild(span);
         });
-        
+
         codeContent.appendChild(lineDiv);
     });
 
-    renderStep(0);
-    
-    // Use GSAP ScrollTrigger to pin and scrub the animation
-    ScrollTrigger.create({
-        trigger: "#dllm-animation",
-        start: "center center", // Start when section center hits viewport center
-        end: "+=2000", // Scroll distance to complete animation (adjust for speed)
-        pin: true, // Pin the section
-        scrub: 1, // Smooth scrubbing
-        onUpdate: (self) => {
-            // self.progress goes from 0 to 1
-            // We want to map 0->1 to Step 0->TOTAL_STEPS
-            const stepIndex = Math.floor(self.progress * TOTAL_STEPS);
-            renderStep(stepIndex);
-        }
-    });
-}
+    renderStepModal(0);
 
-function renderStep(stepIndex) {
-    if (stepIndex < 0 || stepIndex > TOTAL_STEPS) return;
+    // Use mouse wheel within modal for animation control
+    const modalCorefusion = document.getElementById('modal-corefusion');
+    let currentStep = 0;
 
-    const stepData = steps[stepIndex];
-    if (stepLabel) stepLabel.textContent = stepData.label;
-
-    const lineElements = codeContent.children;
-    
-    stepData.lines.forEach((lineData, lineIdx) => {
-        if (!lineElements[lineIdx]) return;
-        const lineEl = lineElements[lineIdx];
-        const tokenElements = lineEl.children;
-        
-        lineData.forEach((tokenData, tokIdx) => {
-            if (tokenElements[tokIdx]) {
-                const el = tokenElements[tokIdx];
-                
-                el.textContent = tokenData.text;
-                
-                if (tokenData.isHidden) {
-                    el.className = 'tok tok-hidden';
-                } else {
-                    el.className = `tok ${tokenData.type}`;
-                }
-            }
+    if (modalCorefusion) {
+        modalCorefusion.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 2 : -2;
+            currentStep = Math.max(0, Math.min(TOTAL_STEPS, currentStep + delta));
+            renderStepModal(currentStep);
         });
-    });
+    }
 
-    if (progressFill) {
-        const progress = (stepIndex / TOTAL_STEPS) * 100;
-        progressFill.style.width = `${progress}%`;
+    function renderStepModal(stepIndex) {
+        if (stepIndex < 0 || stepIndex > TOTAL_STEPS) return;
+
+        const stepData = steps[stepIndex];
+        if (stepLabel) stepLabel.textContent = stepData.label;
+
+        const lineElements = codeContent.children;
+
+        stepData.lines.forEach((lineData, lineIdx) => {
+            if (!lineElements[lineIdx]) return;
+            const lineEl = lineElements[lineIdx];
+            const tokenElements = lineEl.children;
+
+            lineData.forEach((tokenData, tokIdx) => {
+                if (tokenElements[tokIdx]) {
+                    const el = tokenElements[tokIdx];
+
+                    el.textContent = tokenData.text;
+
+                    if (tokenData.isHidden) {
+                        el.className = 'tok tok-hidden';
+                    } else {
+                        el.className = `tok ${tokenData.type}`;
+                    }
+                }
+            });
+        });
+
+        if (progressFill) {
+            const progress = (stepIndex / TOTAL_STEPS) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
     }
 }
-
-// Init DLLM logic after load
-window.addEventListener('load', initDLLM);
 
 /* =========================================
    Dfusion CVPR Workshop Visualization
    ========================================= */
-const dfusionCanvas = document.getElementById('dfusion-canvas');
-if (dfusionCanvas) {
+let dfusionInitialized = false;
+function initDfusionAnimation() {
+    if (dfusionInitialized) return;
+
+    const dfusionCanvas = document.getElementById('dfusion-canvas');
+    if (!dfusionCanvas) return;
+
+    dfusionInitialized = true;
     const dfCtx = dfusionCanvas.getContext('2d');
     let dfRect = dfusionCanvas.getBoundingClientRect();
 
@@ -962,9 +1384,15 @@ if (dfusionCanvas) {
    Taxonomy Visualization (Promise2025)
    Interactive tree with hover language switching
    ========================================= */
-const taxonomyTree = document.getElementById('taxonomy-tree');
-const taxonomySummary = document.getElementById('taxonomy-summary');
-if (taxonomyTree) {
+let taxonomyInitialized = false;
+function initTaxonomyVisualization() {
+    if (taxonomyInitialized) return;
+
+    const taxonomyTree = document.getElementById('taxonomy-tree');
+    const taxonomySummary = document.getElementById('taxonomy-summary');
+    if (!taxonomyTree) return;
+
+    taxonomyInitialized = true;
     // Complete error taxonomy data
     const taxonomyData = [
         {
@@ -1169,4 +1597,628 @@ if (taxonomyTree) {
 
     // Initialize
     updateAll();
+}
+
+/* =========================================
+   Babel Visualization (LLM of Babel)
+   Chinese Code Comment Error Analysis
+   ========================================= */
+let babelInitialized = false;
+function initBabelVisualization() {
+    if (babelInitialized) return;
+
+    const babelCanvas = document.getElementById('babel-canvas');
+    if (!babelCanvas) return;
+
+    babelInitialized = true;
+    const ctx = babelCanvas.getContext('2d');
+    let rect = babelCanvas.getBoundingClientRect();
+    babelCanvas.width = rect.width * window.devicePixelRatio;
+    babelCanvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    // Error taxonomy data from the thesis (Chinese results)
+    const errorData = [
+        { code: 'SE', name: 'Semantic', count: 197, color: '#8b5cf6',
+          children: [
+            { code: 'SE-HA', name: 'Hallucination', count: 113 },
+            { code: 'SE-CS', name: 'Code Snippet', count: 63 },
+            { code: 'SE-TG', name: 'Too General', count: 21 }
+          ]
+        },
+        { code: 'MS', name: 'Model-specific', count: 134, color: '#ef4444',
+          children: [
+            { code: 'MS-NG', name: 'No Generation', count: 31 },
+            { code: 'MS-ME', name: 'Memorization', count: 27 },
+            { code: 'MS-CC', name: 'Copy Context', count: 23 }
+          ]
+        },
+        { code: 'ST', name: 'Syntax', count: 27, color: '#06b6d4',
+          children: [
+            { code: 'ST-IF', name: 'Incorrect Format', count: 27 }
+          ]
+        },
+        { code: 'LG', name: 'Linguistic', count: 0, color: '#f59e0b',
+          children: []
+        }
+    ];
+
+    // Cosine similarity data for visualization
+    const cosineSimilarityData = {
+        normal: { median: 0.95, iqr: [0.93, 0.97] },
+        hallucinated: { median: 0.92, iqr: [0.88, 0.95] }
+    };
+
+    let mouseX = -1000;
+    let mouseY = -1000;
+    let hoveredBar = null;
+    let time = 0;
+
+    function animate() {
+        time += 0.015;
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, rect.width, rect.height);
+
+        const leftWidth = rect.width * 0.55;
+        const rightWidth = rect.width * 0.4;
+        const rightX = rect.width * 0.58;
+
+        // Vertical offset to center content
+        const offsetY = (rect.height - 220) / 2;
+
+        // === LEFT SIDE: Error Taxonomy Bar Chart ===
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px "Space Grotesk", sans-serif';
+        ctx.fillText('Error Distribution (Chinese)', 15, offsetY + 15);
+
+        const maxCount = Math.max(...errorData.map(e => e.count));
+        const barHeight = 28;
+        const barGap = 12;
+        const startY = offsetY + 35;
+        const maxBarWidth = leftWidth - 80;
+
+        hoveredBar = null;
+        errorData.forEach((error, idx) => {
+            const y = startY + idx * (barHeight + barGap);
+            const barWidth = maxCount > 0 ? (error.count / maxCount) * maxBarWidth : 0;
+            const wave = Math.sin(time + idx * 0.5) * 3;
+
+            // Check hover
+            if (mouseX >= 15 && mouseX <= 15 + barWidth + wave &&
+                mouseY >= y && mouseY <= y + barHeight) {
+                hoveredBar = error;
+            }
+
+            // Bar background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(60, y, maxBarWidth, barHeight);
+
+            // Bar fill with animation
+            const gradient = ctx.createLinearGradient(60, y, 60 + barWidth + wave, y);
+            gradient.addColorStop(0, error.color);
+            gradient.addColorStop(1, error.color + '80');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(60, y, Math.max(0, barWidth + wave), barHeight);
+
+            // Label
+            ctx.fillStyle = error.color;
+            ctx.font = 'bold 10px "Courier New", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(error.code, 15, y + 18);
+
+            // Count
+            ctx.fillStyle = '#888';
+            ctx.font = '10px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(error.count.toString(), leftWidth - 10, y + 18);
+        });
+
+        // Hover tooltip for error details
+        if (hoveredBar && hoveredBar.children.length > 0) {
+            const tooltipX = mouseX + 15;
+            const tooltipY = mouseY - 10;
+            const tooltipWidth = 150;
+            const tooltipHeight = 20 + hoveredBar.children.length * 18;
+
+            ctx.fillStyle = 'rgba(20, 20, 20, 0.95)';
+            ctx.strokeStyle = hoveredBar.color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(hoveredBar.name + ' Errors', tooltipX + 8, tooltipY + 14);
+
+            hoveredBar.children.forEach((child, i) => {
+                ctx.fillStyle = '#888';
+                ctx.font = '9px "Courier New", monospace';
+                ctx.fillText(`${child.code}: ${child.count}`, tooltipX + 8, tooltipY + 30 + i * 16);
+            });
+        }
+
+        // === RIGHT SIDE: Cosine Similarity Box Plot ===
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Cosine Similarity', rightX, offsetY + 15);
+
+        const boxY = offsetY + 45;
+        const boxHeight = 35;
+        const boxGap = 50;
+        const scaleMin = 0.85;
+        const scaleMax = 1.0;
+        const scaleWidth = rightWidth - 20;
+
+        // Draw scale
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(rightX, boxY + boxHeight * 2 + boxGap + 15);
+        ctx.lineTo(rightX + scaleWidth, boxY + boxHeight * 2 + boxGap + 15);
+        ctx.stroke();
+
+        // Scale labels
+        ctx.fillStyle = '#666';
+        ctx.font = '8px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        for (let i = 0; i <= 3; i++) {
+            const val = scaleMin + (scaleMax - scaleMin) * (i / 3);
+            const x = rightX + (i / 3) * scaleWidth;
+            ctx.fillText(val.toFixed(2), x, boxY + boxHeight * 2 + boxGap + 28);
+        }
+
+        // Draw box plots
+        const groups = [
+            { label: 'Normal', data: cosineSimilarityData.normal, color: '#22c55e', y: boxY },
+            { label: 'Hallucinated', data: cosineSimilarityData.hallucinated, color: '#ef4444', y: boxY + boxHeight + boxGap }
+        ];
+
+        groups.forEach(group => {
+            const medianX = rightX + ((group.data.median - scaleMin) / (scaleMax - scaleMin)) * scaleWidth;
+            const q1X = rightX + ((group.data.iqr[0] - scaleMin) / (scaleMax - scaleMin)) * scaleWidth;
+            const q3X = rightX + ((group.data.iqr[1] - scaleMin) / (scaleMax - scaleMin)) * scaleWidth;
+
+            // Label
+            ctx.fillStyle = '#888';
+            ctx.font = '9px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(group.label, rightX, group.y - 5);
+
+            // Box
+            ctx.fillStyle = group.color + '30';
+            ctx.fillRect(q1X, group.y, q3X - q1X, boxHeight);
+            ctx.strokeStyle = group.color;
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(q1X, group.y, q3X - q1X, boxHeight);
+
+            // Median line with pulse
+            const pulse = Math.sin(time * 2) * 2;
+            ctx.strokeStyle = group.color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(medianX + pulse, group.y);
+            ctx.lineTo(medianX + pulse, group.y + boxHeight);
+            ctx.stroke();
+
+            // Median value
+            ctx.fillStyle = group.color;
+            ctx.font = 'bold 10px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(group.data.median.toFixed(2), medianX, group.y + boxHeight + 12);
+        });
+
+        // Key insight text
+        ctx.fillStyle = '#5eead4';
+        ctx.font = '9px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Lower similarity = Hallucination detected', rightX, offsetY + 210);
+
+        ctx.textAlign = 'left';
+        requestAnimationFrame(animate);
+    }
+
+    // Mouse tracking
+    babelCanvas.addEventListener('mousemove', (e) => {
+        const r = babelCanvas.getBoundingClientRect();
+        mouseX = e.clientX - r.left;
+        mouseY = e.clientY - r.top;
+        babelCanvas.style.cursor = hoveredBar ? 'pointer' : 'default';
+    });
+
+    babelCanvas.addEventListener('mouseleave', () => {
+        mouseX = -1000;
+        mouseY = -1000;
+        babelCanvas.style.cursor = 'default';
+    });
+
+    animate();
+}
+
+// =========================================
+// Coverage Visualization (Honor Program)
+// =========================================
+let coverageInitialized = false;
+
+function initCoverageVisualization() {
+    if (coverageInitialized) return;
+
+    const coverageCanvas = document.getElementById('coverage-canvas');
+    if (!coverageCanvas) return;
+
+    coverageInitialized = true;
+    const ctx = coverageCanvas.getContext('2d');
+    let rect = coverageCanvas.getBoundingClientRect();
+    coverageCanvas.width = rect.width * window.devicePixelRatio;
+    coverageCanvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    // Grammar rule data based on the paper (Python as default)
+    const languageData = {
+        python: {
+            name: 'Python',
+            rules: [
+                { name: 'identifier', count: 41.7, color: '#22c55e' },
+                { name: 'expression_statement', count: 25.3, color: '#22c55e' },
+                { name: 'string_literal', count: 12.8, color: '#3b82f6' },
+                { name: 'call_expression', count: 8.4, color: '#3b82f6' },
+                { name: 'binary_expression', count: 5.2, color: '#f59e0b' },
+                { name: 'for_statement', count: 2.8, color: '#f59e0b' },
+                { name: 'if_statement', count: 1.9, color: '#ef4444' },
+                { name: 'lambda_expression', count: 0.8, color: '#ef4444' },
+                { name: 'context_manager', count: 0.4, color: '#ef4444' },
+                { name: 'list_comprehension', count: 0.3, color: '#ef4444' },
+                { name: 'generator_expression', count: 0.2, color: '#ef4444' },
+                { name: 'decorator', count: 0.1, color: '#ef4444' },
+            ],
+            topRulePercent: 41.7,
+            top10Percent: 97.9
+        },
+        java: {
+            name: 'Java',
+            rules: [
+                { name: 'identifier', count: 38.2, color: '#22c55e' },
+                { name: 'method_invocation', count: 22.1, color: '#22c55e' },
+                { name: 'class_declaration', count: 15.4, color: '#3b82f6' },
+                { name: 'field_access', count: 9.8, color: '#3b82f6' },
+                { name: 'variable_declarator', count: 6.2, color: '#f59e0b' },
+                { name: 'for_statement', count: 3.1, color: '#f59e0b' },
+                { name: 'if_statement', count: 2.4, color: '#ef4444' },
+                { name: 'lambda_expression', count: 1.2, color: '#ef4444' },
+                { name: 'try_statement', count: 0.8, color: '#ef4444' },
+                { name: 'enum_declaration', count: 0.4, color: '#ef4444' },
+                { name: 'interface_declaration', count: 0.3, color: '#ef4444' },
+                { name: 'annotation', count: 0.1, color: '#ef4444' },
+            ],
+            topRulePercent: 38.2,
+            top10Percent: 96.5
+        },
+        javascript: {
+            name: 'JavaScript',
+            rules: [
+                { name: 'identifier', count: 35.8, color: '#22c55e' },
+                { name: 'call_expression', count: 24.6, color: '#22c55e' },
+                { name: 'string', count: 14.2, color: '#3b82f6' },
+                { name: 'member_expression', count: 10.1, color: '#3b82f6' },
+                { name: 'arrow_function', count: 5.8, color: '#f59e0b' },
+                { name: 'object', count: 4.2, color: '#f59e0b' },
+                { name: 'array', count: 2.1, color: '#ef4444' },
+                { name: 'template_string', count: 1.4, color: '#ef4444' },
+                { name: 'class_declaration', count: 0.9, color: '#ef4444' },
+                { name: 'async_function', count: 0.5, color: '#ef4444' },
+                { name: 'generator_function', count: 0.2, color: '#ef4444' },
+                { name: 'decorator', count: 0.1, color: '#ef4444' },
+            ],
+            topRulePercent: 35.8,
+            top10Percent: 95.2
+        },
+        rust: {
+            name: 'Rust',
+            rules: [
+                { name: 'identifier', count: 32.4, color: '#22c55e' },
+                { name: 'macro_invocation', count: 21.8, color: '#22c55e' },
+                { name: 'call_expression', count: 16.2, color: '#3b82f6' },
+                { name: 'field_expression', count: 11.4, color: '#3b82f6' },
+                { name: 'let_declaration', count: 7.8, color: '#f59e0b' },
+                { name: 'match_expression', count: 4.2, color: '#f59e0b' },
+                { name: 'impl_item', count: 2.8, color: '#ef4444' },
+                { name: 'trait_item', count: 1.6, color: '#ef4444' },
+                { name: 'lifetime', count: 0.9, color: '#ef4444' },
+                { name: 'async_block', count: 0.5, color: '#ef4444' },
+                { name: 'unsafe_block', count: 0.3, color: '#ef4444' },
+                { name: 'extern_crate', count: 0.1, color: '#ef4444' },
+            ],
+            topRulePercent: 32.4,
+            top10Percent: 94.8
+        },
+        go: {
+            name: 'Go',
+            rules: [
+                { name: 'identifier', count: 40.2, color: '#22c55e' },
+                { name: 'call_expression', count: 23.4, color: '#22c55e' },
+                { name: 'selector_expression', count: 13.8, color: '#3b82f6' },
+                { name: 'short_var_declaration', count: 8.6, color: '#3b82f6' },
+                { name: 'if_statement', count: 5.4, color: '#f59e0b' },
+                { name: 'for_statement', count: 3.8, color: '#f59e0b' },
+                { name: 'func_literal', count: 2.1, color: '#ef4444' },
+                { name: 'defer_statement', count: 1.2, color: '#ef4444' },
+                { name: 'go_statement', count: 0.7, color: '#ef4444' },
+                { name: 'select_statement', count: 0.4, color: '#ef4444' },
+                { name: 'type_assertion', count: 0.2, color: '#ef4444' },
+                { name: 'channel_type', count: 0.1, color: '#ef4444' },
+            ],
+            topRulePercent: 40.2,
+            top10Percent: 97.1
+        }
+    };
+
+    let currentLang = 'python';
+    let mouseX = -1000;
+    let mouseY = -1000;
+    let hoveredRule = null;
+    let time = 0;
+
+    // Tokenization offset data (from paper Figure 6)
+    const tokenOffsetData = [
+        { lang: 'C#', offset: 4.8 },
+        { lang: 'JS', offset: 4.2 },
+        { lang: 'C', offset: 3.9 },
+        { lang: 'C++', offset: 3.5 },
+        { lang: 'Python', offset: 3.1 },
+        { lang: 'Go', offset: 2.8 },
+        { lang: 'Rust', offset: 2.4 },
+        { lang: 'Java', offset: 2.1 },
+        { lang: 'Scala', offset: 1.8 },
+    ];
+
+    function animate() {
+        time += 0.015;
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, rect.width, rect.height);
+
+        const data = languageData[currentLang];
+        const offsetY = 15;
+
+        // === LEFT SIDE: Treemap visualization ===
+        const treemapWidth = rect.width * 0.55;
+        const treemapHeight = rect.height - 100;
+        const treemapX = 15;
+        const treemapY = offsetY + 35;
+
+        // Title with language selector buttons
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Grammar Coverage:', treemapX, offsetY + 20);
+
+        // Language selector buttons (prominent, next to title)
+        const langs = Object.keys(languageData);
+        let btnX = treemapX + 100;
+        const btnY = offsetY + 8;
+        const btnHeight = 18;
+        const btnPadding = 8;
+
+        langs.forEach((lang) => {
+            const isActive = lang === currentLang;
+            const label = languageData[lang].name;
+            ctx.font = isActive ? 'bold 9px "Space Grotesk", sans-serif' : '9px "Space Grotesk", sans-serif';
+            const textWidth = ctx.measureText(label).width;
+            const btnWidth = textWidth + btnPadding * 2;
+
+            // Store button bounds for click detection
+            languageData[lang].btnBounds = { x: btnX, y: btnY, w: btnWidth, h: btnHeight };
+
+            // Button background
+            if (isActive) {
+                ctx.fillStyle = '#5eead4';
+                ctx.beginPath();
+                ctx.roundRect(btnX, btnY, btnWidth, btnHeight, 4);
+                ctx.fill();
+                ctx.fillStyle = '#0a0a0a';
+            } else {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.beginPath();
+                ctx.roundRect(btnX, btnY, btnWidth, btnHeight, 4);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.fillStyle = '#888';
+            }
+
+            // Button text
+            ctx.textAlign = 'center';
+            ctx.fillText(label, btnX + btnWidth / 2, btnY + 13);
+            ctx.textAlign = 'left';
+
+            btnX += btnWidth + 6;
+        });
+
+        // Draw treemap blocks
+        let x = treemapX;
+        let y = treemapY;
+        let rowHeight = 0;
+        const totalCount = data.rules.reduce((sum, r) => sum + r.count, 0);
+
+        hoveredRule = null;
+        data.rules.forEach((rule, idx) => {
+            const wave = Math.sin(time + idx * 0.3) * 2;
+            const areaRatio = rule.count / totalCount;
+            const blockWidth = Math.max(30, areaRatio * treemapWidth * 2.5 + wave);
+            const blockHeight = Math.max(25, areaRatio * treemapHeight * 1.5);
+
+            if (x + blockWidth > treemapX + treemapWidth) {
+                x = treemapX;
+                y += rowHeight + 4;
+                rowHeight = 0;
+            }
+
+            rowHeight = Math.max(rowHeight, blockHeight);
+
+            // Check hover
+            if (mouseX >= x && mouseX <= x + blockWidth &&
+                mouseY >= y && mouseY <= y + blockHeight) {
+                hoveredRule = rule;
+            }
+
+            // Block fill
+            const isHovered = hoveredRule === rule;
+            const gradient = ctx.createLinearGradient(x, y, x + blockWidth, y + blockHeight);
+            gradient.addColorStop(0, rule.color + (isHovered ? '90' : '50'));
+            gradient.addColorStop(1, rule.color + (isHovered ? '60' : '20'));
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x, y, blockWidth - 3, blockHeight - 3);
+
+            // Border
+            ctx.strokeStyle = rule.color + (isHovered ? 'ff' : '80');
+            ctx.lineWidth = isHovered ? 2 : 1;
+            ctx.strokeRect(x, y, blockWidth - 3, blockHeight - 3);
+
+            // Label
+            if (blockWidth > 45 && blockHeight > 22) {
+                ctx.fillStyle = '#fff';
+                ctx.font = '8px "Courier New", monospace';
+                const label = rule.name.length > 10 ? rule.name.substring(0, 10) + '..' : rule.name;
+                ctx.fillText(label, x + 4, y + 14);
+
+                ctx.fillStyle = '#888';
+                ctx.font = '7px "Space Grotesk", sans-serif';
+                ctx.fillText(`${rule.count.toFixed(1)}%`, x + 4, y + 24);
+            }
+
+            x += blockWidth;
+        });
+
+        // Hover tooltip
+        if (hoveredRule) {
+            const tooltipX = Math.min(mouseX + 15, rect.width - 130);
+            const tooltipY = mouseY - 40;
+
+            ctx.fillStyle = 'rgba(20, 20, 20, 0.95)';
+            ctx.strokeStyle = hoveredRule.color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(tooltipX, tooltipY, 120, 35, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 9px "Courier New", monospace';
+            ctx.fillText(hoveredRule.name, tooltipX + 8, tooltipY + 14);
+
+            ctx.fillStyle = hoveredRule.color;
+            ctx.font = '9px "Space Grotesk", sans-serif';
+            ctx.fillText(`${hoveredRule.count.toFixed(1)}% of corpus`, tooltipX + 8, tooltipY + 27);
+        }
+
+        // === RIGHT SIDE: Pareto insight + Tokenization offset ===
+        const rightX = rect.width * 0.6;
+        const rightWidth = rect.width * 0.38;
+
+        // Pareto insight box
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.1)';
+        ctx.strokeStyle = '#22c55e40';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(rightX, offsetY + 20, rightWidth, 55, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#22c55e';
+        ctx.font = 'bold 10px "Space Grotesk", sans-serif';
+        ctx.fillText('Pareto Distribution', rightX + 10, offsetY + 38);
+
+        ctx.fillStyle = '#888';
+        ctx.font = '9px "Space Grotesk", sans-serif';
+        ctx.fillText(`Top 1 rule: ${data.topRulePercent}%`, rightX + 10, offsetY + 52);
+        ctx.fillText(`Top 10 rules: ${data.top10Percent}%`, rightX + 10, offsetY + 66);
+
+        // Tokenization offset chart
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px "Space Grotesk", sans-serif';
+        ctx.fillText('Tokenization Offset', rightX, offsetY + 100);
+
+        const barStartY = offsetY + 115;
+        const barHeight = 12;
+        const barGap = 4;
+        const maxOffset = Math.max(...tokenOffsetData.map(d => d.offset));
+
+        tokenOffsetData.forEach((item, idx) => {
+            const barY = barStartY + idx * (barHeight + barGap);
+            const barWidth = (item.offset / maxOffset) * (rightWidth - 35);
+            const wave = Math.sin(time + idx * 0.4) * 3;
+
+            // Bar background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(rightX + 30, barY, rightWidth - 35, barHeight);
+
+            // Bar fill
+            const barColor = item.offset > 3.5 ? '#ef4444' : item.offset > 2.5 ? '#f59e0b' : '#22c55e';
+            ctx.fillStyle = barColor + '80';
+            ctx.fillRect(rightX + 30, barY, Math.max(0, barWidth + wave), barHeight);
+
+            // Label
+            ctx.fillStyle = '#666';
+            ctx.font = '7px "Courier New", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(item.lang, rightX + 26, barY + 9);
+        });
+
+        ctx.textAlign = 'left';
+
+        // Key insight
+        ctx.fillStyle = '#5eead4';
+        ctx.font = '8px "Space Grotesk", sans-serif';
+        ctx.fillText('Higher offset = More tokenization mismatch', rightX, rect.height - 15);
+
+        requestAnimationFrame(animate);
+    }
+
+    // Mouse tracking - update cursor for language buttons
+    coverageCanvas.addEventListener('mousemove', (e) => {
+        const r = coverageCanvas.getBoundingClientRect();
+        mouseX = e.clientX - r.left;
+        mouseY = e.clientY - r.top;
+
+        // Check if hovering over language buttons
+        let overButton = false;
+        const langs = Object.keys(languageData);
+        langs.forEach((lang) => {
+            const btn = languageData[lang].btnBounds;
+            if (btn && mouseX >= btn.x && mouseX <= btn.x + btn.w &&
+                mouseY >= btn.y && mouseY <= btn.y + btn.h) {
+                overButton = true;
+            }
+        });
+
+        coverageCanvas.style.cursor = (hoveredRule || overButton) ? 'pointer' : 'default';
+    });
+
+    coverageCanvas.addEventListener('mouseleave', () => {
+        mouseX = -1000;
+        mouseY = -1000;
+        coverageCanvas.style.cursor = 'default';
+    });
+
+    // Click to change language (using button bounds)
+    coverageCanvas.addEventListener('click', (e) => {
+        const r = coverageCanvas.getBoundingClientRect();
+        const clickX = e.clientX - r.left;
+        const clickY = e.clientY - r.top;
+
+        // Check if click is on a language button
+        const langs = Object.keys(languageData);
+        langs.forEach((lang) => {
+            const btn = languageData[lang].btnBounds;
+            if (btn && clickX >= btn.x && clickX <= btn.x + btn.w &&
+                clickY >= btn.y && clickY <= btn.y + btn.h) {
+                currentLang = lang;
+            }
+        });
+    });
+
+    animate();
 }
