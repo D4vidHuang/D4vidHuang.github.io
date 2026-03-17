@@ -91,6 +91,15 @@
                 </div>
             </section>
 
+            <section id="vision">
+                <div class="section-header">
+                    <h3>// Vision</h3>
+                </div>
+                <div class="vision-content">
+                    <p class="vision-statement">Bridge the gap between <span class="highlight">application</span> and <span class="highlight">research</span>.</p>
+                </div>
+            </section>
+
             <section id="research">
                 <div class="section-header">
                     <h3>// Research Interests</h3>
@@ -184,7 +193,7 @@
                                     <p class="modal-subtitle">Refactoring as Denoising?</p>
                                 </div>
                                 <div class="modal-abstract">
-                                    <p>[Abstract placeholder: This section will contain the research abstract describing the CoReFusion approach to code refactoring using diffusion language models. The methodology treats code refactoring as a denoising process, iteratively transforming noisy code into clean, refactored versions.]</p>
+                                    <p>CoReFusion treats code refactoring as a denoising task — viewing suboptimal variable names as "noise" to be removed. Using diffusion language models, we show they excel at filling masked positions but struggle to localize which identifiers need renaming without guidance. This "filling vs finding" gap reveals key insights into how dLLMs reason about code.</p>
                                 </div>
                                 <div class="step-indicator">
                                     <span id="step-label" class="step-label">Steps to Diffuse = 64</span>
@@ -242,7 +251,7 @@
                                     <p class="modal-subtitle">Team TUDelft Dfusion</p>
                                 </div>
                                 <div class="modal-abstract">
-                                    <p>[Abstract placeholder: This section will contain the research abstract describing the Dfusion approach for image restoration. The method combines multiple state-of-the-art models using a Mixture of Experts architecture, achieving competitive results with minimal computational overhead.]</p>
+                                    <p>Dfusion combines two pretrained diffusion models (RDiffusion and DiT) through a lightweight fusion CNN for raindrop removal. Each model excels at different aspects — one for smooth textures, the other for fine details. The fusion network merges their strengths, achieving robust restoration in both day and night conditions.</p>
                                 </div>
                                 <div class="dfusion-rank">
                                     <span class="rank-number">13</span>
@@ -272,7 +281,7 @@
                                     <p class="modal-subtitle">LLM Error Taxonomy Study</p>
                                 </div>
                                 <div class="modal-abstract">
-                                    <p>[Abstract placeholder: This section will contain the research abstract describing the qualitative investigation into LLM-generated multilingual code comments. The study reveals evaluation biases in non-English languages and provides an open-source dataset for improvement.]</p>
+                                    <p>We evaluate code LLMs in non-English contexts through an open-coding study of 12,500 labeled generations across five languages (Chinese, Dutch, English, Greek, Polish). Our analysis yields a taxonomy of 26 error categories, revealing that while models often produce partially correct comments, standard neural metrics fail to reliably distinguish meaningful completions from noise.</p>
                                 </div>
                                 <div class="taxonomy-stats">
                                     <div class="taxonomy-stat">

@@ -273,6 +273,29 @@ h3 {
     font-size: 0.9rem;
 }
 
+/* Vision Section */
+#vision {
+    padding: 60px 0;
+}
+
+.vision-content {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.vision-statement {
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text-color);
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.vision-statement .highlight {
+    color: #5eead4;
+    font-weight: 500;
+}
+
 /* Research Interests Pill Layout */
 .research-interests-container {
     display: flex;
