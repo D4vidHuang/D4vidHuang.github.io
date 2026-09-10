@@ -15,12 +15,14 @@ import unicodedata
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 
 PROFILE_ID = "C4xHgUMAAAAJ"
 PROFILE_URL = f"https://scholar.google.com/citations?user={PROFILE_ID}&hl=en"
+SERPAPI_URL = "https://serpapi.com/search.json"
 FETCH_URLS = (
     f"https://scholar.google.nl/citations?user={PROFILE_ID}&hl=en",
     f"https://scholar.google.co.uk/citations?user={PROFILE_ID}&hl=en",
@@ -216,6 +218,52 @@ def fetch_profile(timeout: float) -> str:
     raise RuntimeError("all Google Scholar profile hosts failed; " + " | ".join(errors))
 
 
+def fetch_serpapi(api_key: str, timeout: float) -> dict[str, object]:
+    """Fetch the same public profile through SerpAPI without logging the key."""
+    query = urlencode(
+        {
+            "engine": "google_scholar_author",
+            "author_id": PROFILE_ID,
+            "hl": "en",
+            "num": "100",
+            "api_key": api_key,
+        }
+    )
+    request = Request(
+        f"{SERPAPI_URL}?{query}",
+        headers={"Accept": "application/json", "User-Agent": USER_AGENT},
+    )
+
+    try:
+        with urlopen(request, timeout=timeout, context=_ssl_context()) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as error:
+        raise RuntimeError(
+            f"SerpAPI request returned HTTP {error.code}"
+        ) from None
+    except URLError:
+        raise RuntimeError("SerpAPI request failed") from None
+    except json.JSONDecodeError:
+        raise RuntimeError("SerpAPI returned invalid JSON") from None
+
+    if not isinstance(payload, dict):
+        raise RuntimeError("SerpAPI returned an unexpected response")
+    if payload.get("error"):
+        raise RuntimeError("SerpAPI returned an error response")
+
+    metadata = payload.get("search_metadata")
+    status = metadata.get("status") if isinstance(metadata, dict) else None
+    if status != "Success":
+        raise RuntimeError(f"unexpected SerpAPI status: {status!r}")
+
+    parameters = payload.get("search_parameters")
+    author_id = parameters.get("author_id") if isinstance(parameters, dict) else None
+    if author_id != PROFILE_ID:
+        raise RuntimeError("SerpAPI response is for a different Scholar profile")
+
+    return payload
+
+
 def _ssl_context() -> ssl.SSLContext:
     """Use Python's CA bundle, with common system bundles as safe fallbacks."""
     defaults = ssl.get_default_verify_paths()
@@ -332,6 +380,132 @@ def parse_publications(parser: ScholarProfileParser) -> list[dict[str, object]]:
     return result
 
 
+def parse_serpapi_metrics(payload: dict[str, object]) -> dict[str, object]:
+    cited_by = payload.get("cited_by")
+    table = cited_by.get("table") if isinstance(cited_by, dict) else None
+    if not isinstance(table, list):
+        raise ValueError("missing SerpAPI cited-by table")
+
+    raw_metrics: dict[str, tuple[int, int, int]] = {}
+    for row in table:
+        if not isinstance(row, dict):
+            continue
+        for label in ("citations", "h_index", "i10_index"):
+            values = row.get(label)
+            if not isinstance(values, dict):
+                continue
+
+            recent_keys = [
+                key
+                for key in values
+                if isinstance(key, str) and re.fullmatch(r"since_\d{4}", key)
+            ]
+            if len(recent_keys) != 1:
+                raise ValueError(f"invalid SerpAPI recent metric for {label}")
+            recent_key = recent_keys[0]
+            raw_metrics[label] = (
+                _parse_nonnegative_int(str(values.get("all", "")), f"{label} total"),
+                _parse_nonnegative_int(
+                    str(values.get(recent_key, "")), f"{label} recent total"
+                ),
+                int(recent_key.removeprefix("since_")),
+            )
+
+    required = {"citations", "h_index", "i10_index"}
+    missing = required - raw_metrics.keys()
+    if missing:
+        raise ValueError(f"missing SerpAPI metrics: {', '.join(sorted(missing))}")
+
+    recent_years = {values[2] for values in raw_metrics.values()}
+    if len(recent_years) != 1:
+        raise ValueError("SerpAPI metrics use inconsistent recent-year windows")
+    recent_since_year = recent_years.pop()
+
+    return {
+        "citations": raw_metrics["citations"][0],
+        "h_index": raw_metrics["h_index"][0],
+        "i10_index": raw_metrics["i10_index"][0],
+        "recent_since_year": recent_since_year,
+        "recent": {
+            "citations": raw_metrics["citations"][1],
+            "h_index": raw_metrics["h_index"][1],
+            "i10_index": raw_metrics["i10_index"][1],
+        },
+    }
+
+
+def parse_serpapi_yearly_citations(
+    payload: dict[str, object],
+) -> dict[str, int]:
+    cited_by = payload.get("cited_by")
+    graph = cited_by.get("graph") if isinstance(cited_by, dict) else None
+    if not isinstance(graph, list) or not graph:
+        raise ValueError("missing SerpAPI citation graph")
+
+    result: dict[str, int] = {}
+    for point in graph:
+        if not isinstance(point, dict):
+            raise ValueError("invalid SerpAPI citation graph point")
+        year = _parse_nonnegative_int(str(point.get("year", "")), "citation year")
+        if not 1900 <= year <= 2200:
+            raise ValueError(f"implausible citation graph year: {year}")
+        key = str(year)
+        if key in result:
+            raise ValueError(f"duplicate citation graph year: {year}")
+        result[key] = _parse_nonnegative_int(
+            str(point.get("citations", "")), f"citation graph count for {year}"
+        )
+
+    return dict(sorted(result.items()))
+
+
+def parse_serpapi_publications(
+    payload: dict[str, object],
+) -> list[dict[str, object]]:
+    articles = payload.get("articles")
+    if not isinstance(articles, list):
+        raise ValueError("missing SerpAPI articles")
+    articles_by_id = {
+        str(article.get("citation_id")): article
+        for article in articles
+        if isinstance(article, dict) and article.get("citation_id")
+    }
+    result: list[dict[str, object]] = []
+
+    for expected in PUBLICATIONS:
+        scholar_id = expected["scholar_id"]
+        article = articles_by_id.get(scholar_id)
+        if article is None:
+            raise ValueError(f"missing expected Scholar publication: {scholar_id}")
+        if _normalise_title(str(article.get("title", ""))) != _normalise_title(
+            expected["title"]
+        ):
+            raise ValueError(f"title mismatch for Scholar publication: {scholar_id}")
+
+        year = _parse_nonnegative_int(str(article.get("year", "")), "article year")
+        cited_by = article.get("cited_by")
+        citations = 0
+        if cited_by is not None:
+            if not isinstance(cited_by, dict):
+                raise ValueError(f"invalid cited-by data for publication: {scholar_id}")
+            citations = _parse_nonnegative_int(
+                str(cited_by.get("value", "")), "article citation count"
+            )
+
+        result.append(
+            {
+                "id": expected["id"],
+                "scholar_id": scholar_id,
+                "title": expected["title"],
+                "year": year,
+                "citations": citations,
+                "url": expected["url"],
+            }
+        )
+
+    return result
+
+
 def build_snapshot(body: str) -> dict[str, object]:
     parser = ScholarProfileParser()
     parser.feed(body)
@@ -340,6 +514,26 @@ def build_snapshot(body: str) -> dict[str, object]:
     metrics, _ = parse_metric_rows(parser.metric_rows)
     yearly = parse_yearly_citations(parser)
     publications = parse_publications(parser)
+
+    if metrics["h_index"] > metrics["citations"]:
+        raise ValueError("h-index cannot exceed the total citation count")
+    if metrics["i10_index"] > len(publications) + metrics["citations"]:
+        raise ValueError("implausible i10-index")
+
+    return {
+        "source": "Google Scholar",
+        "profile_id": PROFILE_ID,
+        "profile_url": PROFILE_URL,
+        "metrics": metrics,
+        "citations_by_year": yearly,
+        "publications": publications,
+    }
+
+
+def build_serpapi_snapshot(payload: dict[str, object]) -> dict[str, object]:
+    metrics = parse_serpapi_metrics(payload)
+    yearly = parse_serpapi_yearly_citations(payload)
+    publications = parse_serpapi_publications(payload)
 
     if metrics["h_index"] > metrics["citations"]:
         raise ValueError("h-index cannot exceed the total citation count")
@@ -396,7 +590,13 @@ def atomic_write_json(path: Path, value: dict[str, object]) -> None:
 
 def update(output: Path, timeout: float) -> bool:
     existing = load_existing(output)
-    candidate = build_snapshot(fetch_profile(timeout))
+    serpapi_key = os.environ.get("SERPAPI_KEY", "").strip()
+    if serpapi_key:
+        candidate = build_serpapi_snapshot(fetch_serpapi(serpapi_key, timeout))
+        retrieval_method = "SerpAPI"
+    else:
+        candidate = build_snapshot(fetch_profile(timeout))
+        retrieval_method = "the public profile"
     verified_at = (
         datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     )
@@ -405,13 +605,16 @@ def update(output: Path, timeout: float) -> bool:
         comparable(existing) == candidate
         and str((existing or {}).get("updated_at", ""))[:10] == verified_at[:10]
     ):
-        print(f"Google Scholar metrics already verified today; kept {output}")
+        print(
+            f"Google Scholar metrics already verified today via "
+            f"{retrieval_method}; kept {output}"
+        )
         return False
 
     candidate_with_time = copy.deepcopy(candidate)
     candidate_with_time["updated_at"] = verified_at
     atomic_write_json(output, candidate_with_time)
-    print(f"Verified Google Scholar metrics in {output}")
+    print(f"Verified Google Scholar metrics via {retrieval_method} in {output}")
     return True
 
 

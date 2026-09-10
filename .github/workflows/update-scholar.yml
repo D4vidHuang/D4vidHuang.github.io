@@ -14,9 +14,7 @@ concurrency:
 
 jobs:
   update:
-    # Scholar blocks common Linux datacenter traffic; the macOS runner is closer
-    # to the local environment where the public profile is verified successfully.
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Check out the default branch
@@ -31,7 +29,29 @@ jobs:
           python-version: "3.13"
 
       - name: Refresh Scholar metrics
+        id: refresh
+        continue-on-error: true
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: python scripts/update_scholar.py
+
+      - name: Explain a preserved last-known-good snapshot
+        if: steps.refresh.outcome == 'failure'
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+        shell: bash
+        run: |
+          if [ -n "${SERPAPI_KEY}" ]; then
+            echo "::error::Scholar refresh failed even though SERPAPI_KEY is configured. The previous verified snapshot was preserved."
+            exit 1
+          fi
+
+          echo "::warning::Google blocked the public-profile refresh. Add the SERPAPI_KEY repository secret for reliable hosted updates; the previous verified snapshot was preserved."
+          {
+            echo "### Google Scholar snapshot preserved"
+            echo
+            echo "Google blocked the public-profile request and no SerpAPI key is configured. The website continues to show its dated, last-verified snapshot."
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Commit the daily verified snapshot
         shell: bash
