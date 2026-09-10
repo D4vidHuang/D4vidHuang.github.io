@@ -21,6 +21,11 @@ from urllib.request import Request, urlopen
 
 PROFILE_ID = "C4xHgUMAAAAJ"
 PROFILE_URL = f"https://scholar.google.com/citations?user={PROFILE_ID}&hl=en"
+FETCH_URLS = (
+    f"https://scholar.google.nl/citations?user={PROFILE_ID}&hl=en",
+    f"https://scholar.google.co.uk/citations?user={PROFILE_ID}&hl=en",
+    PROFILE_URL,
+)
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "data" / "scholar.json"
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -182,26 +187,33 @@ class ScholarProfileParser(HTMLParser):
 
 
 def fetch_profile(timeout: float) -> str:
-    request = Request(
-        PROFILE_URL,
-        headers={
-            "Accept": "text/html,application/xhtml+xml",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cache-Control": "no-cache",
-            "User-Agent": USER_AGENT,
-        },
-    )
-    with urlopen(request, timeout=timeout, context=_ssl_context()) as response:
-        charset = response.headers.get_content_charset() or "utf-8"
-        body = response.read().decode(charset, errors="replace")
+    errors: list[str] = []
+    for fetch_url in FETCH_URLS:
+        try:
+            request = Request(
+                fetch_url,
+                headers={
+                    "Accept": "text/html,application/xhtml+xml",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Cache-Control": "no-cache",
+                    "User-Agent": USER_AGENT,
+                },
+            )
+            with urlopen(request, timeout=timeout, context=_ssl_context()) as response:
+                charset = response.headers.get_content_charset() or "utf-8"
+                body = response.read().decode(charset, errors="replace")
 
-    lower_body = body.casefold()
-    block_markers = ("unusual traffic", "not a robot", "recaptcha", "/sorry/")
-    if any(marker in lower_body for marker in block_markers):
-        raise RuntimeError("Google Scholar returned a bot-check page")
-    if 'id="gsc_rsb_st"' not in body or PROFILE_ID not in body:
-        raise RuntimeError("response is not the expected public Scholar profile")
-    return body
+            lower_body = body.casefold()
+            block_markers = ("unusual traffic", "not a robot", "recaptcha", "/sorry/")
+            if any(marker in lower_body for marker in block_markers):
+                raise RuntimeError("bot-check page")
+            if 'id="gsc_rsb_st"' not in body or PROFILE_ID not in body:
+                raise RuntimeError("unexpected profile response")
+            return body
+        except Exception as error:
+            errors.append(f"{fetch_url}: {type(error).__name__}: {error}")
+
+    raise RuntimeError("all Google Scholar profile hosts failed; " + " | ".join(errors))
 
 
 def _ssl_context() -> ssl.SSLContext:
