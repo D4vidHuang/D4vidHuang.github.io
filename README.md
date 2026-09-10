@@ -3,18 +3,29 @@
 This is the source code for my personal website hosted on GitHub Pages.
 
 ## Features
-- **Sci-Fi Design**: Dark theme with glowing text and particle background effects.
-- **Responsive**: Adapts to mobile and desktop screens.
-- **Interactive**: Mouse interaction with background particles.
 
-## Customization
-- **Text**: Edit `index.html` to update your bio, research interests, and links.
-- **Styles**: Modify `style.css` to change colors or fonts.
-- **Animation**: Adjust particle count and speed in `script.js`.
+- Light editorial design based on TU Delft cyan.
+- Responsive profile, research, publication, service, project, and visitor sections.
+- Interactive research visualizations with keyboard-accessible launch controls.
+- A last-known-good Google Scholar snapshot refreshed daily by GitHub Actions.
+- An anonymized unique-visitor total and a separate opt-in live visitor map.
+
+## Scholar data
+
+Run the same refresh used by GitHub Actions:
+
+```bash
+python3 scripts/update_scholar.py
+```
+
+The updater validates the public profile before atomically replacing `data/scholar.json`. A failed request leaves the last verified snapshot untouched.
 
 ## Local Development
+
 To preview the site locally:
+
 ```bash
 python3 -m http.server 8000
 ```
-Then open `http://localhost:8000` in your browser.
+
+Then open `http://localhost:8000` in your browser. Visitor counts are disabled on localhost so previews do not affect the public total.

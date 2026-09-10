@@ -1,4 +1,6 @@
-gsap.registerPlugin(ScrollTrigger);
+if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+}
 
 // =========================================
 // Thumbnail Canvas Animation - Research Specific
@@ -8,13 +10,50 @@ function initThumbnailCanvas(canvasId, type) {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    let rect;
+    const resizeCanvas = () => {
+        rect = canvas.getBoundingClientRect();
+        const scale = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.round(rect.width * scale));
+        canvas.height = Math.max(1, Math.round(rect.height * scale));
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    };
+    resizeCanvas();
+    if (window.ResizeObserver) {
+        new ResizeObserver(resizeCanvas).observe(canvas);
+    }
 
     let animationId;
+    let nextAnimationFrame;
+    let isInViewport = true;
     let time = 0;
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const animationAllowed = () => isInViewport && !document.hidden && !reducedMotionQuery.matches;
+    const queueThumbnailFrame = callback => {
+        nextAnimationFrame = callback;
+        if (!animationAllowed() || animationId) return;
+        animationId = requestAnimationFrame(() => {
+            animationId = null;
+            if (animationAllowed()) callback();
+        });
+    };
+    const syncThumbnailAnimation = () => {
+        if (!animationAllowed() && animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        } else if (animationAllowed() && nextAnimationFrame && !animationId) {
+            queueThumbnailFrame(nextAnimationFrame);
+        }
+    };
+    if (window.IntersectionObserver) {
+        new IntersectionObserver(entries => {
+            isInViewport = entries[0].isIntersecting;
+            syncThumbnailAnimation();
+        }, { rootMargin: '120px' }).observe(canvas);
+    }
+    document.addEventListener('visibilitychange', syncThumbnailAnimation);
+    reducedMotionQuery.addEventListener?.('change', syncThumbnailAnimation);
 
     if (type === 'corefusion') {
         // CoReFusion: Code denoising visualization
@@ -70,7 +109,7 @@ function initThumbnailCanvas(canvasId, type) {
             ctx.fillText(`t = ${Math.floor((1 - noiseLevel) * 64)}`, rect.width - 45, 18);
 
             time++;
-            animationId = requestAnimationFrame(animate);
+            queueThumbnailFrame(animate);
         }
         animate();
 
@@ -127,7 +166,7 @@ function initThumbnailCanvas(canvasId, type) {
             ctx.fillText('DAY', 8, 14);
             ctx.fillText('NIGHT', rect.width / 2 + 8, 14);
 
-            animationId = requestAnimationFrame(animate);
+            queueThumbnailFrame(animate);
         }
         animate();
 
@@ -135,7 +174,7 @@ function initThumbnailCanvas(canvasId, type) {
         // Taxonomy: Error category bar chart
         const categories = [
             { name: 'MS', value: 5007, color: '#ef4444' },
-            { name: 'LG', value: 1728, color: '#f59e0b' },
+            { name: 'LG', value: 1728, color: '#3b82f6' },
             { name: 'SE', value: 8333, color: '#8b5cf6' },
             { name: 'ST', value: 84, color: '#06b6d4' }
         ];
@@ -175,7 +214,7 @@ function initThumbnailCanvas(canvasId, type) {
             });
 
             ctx.textAlign = 'left';
-            animationId = requestAnimationFrame(animate);
+            queueThumbnailFrame(animate);
         }
         animate();
 
@@ -249,7 +288,7 @@ function initThumbnailCanvas(canvasId, type) {
             const errorTypes = ['SE', 'MS', 'LG'];
             errorTypes.forEach((type, i) => {
                 const barX = 15 + i * (barWidth + 5);
-                const colors = { 'SE': '#8b5cf6', 'MS': '#ef4444', 'LG': '#f59e0b' };
+                const colors = { 'SE': '#8b5cf6', 'MS': '#ef4444', 'LG': '#3b82f6' };
                 const heights = { 'SE': 0.6, 'MS': 0.35, 'LG': 0.05 };
                 const wave = Math.sin(time + i) * 0.05;
 
@@ -259,7 +298,7 @@ function initThumbnailCanvas(canvasId, type) {
                 ctx.fillRect(barX, barY - 8, (barWidth - 5) * (heights[type] + wave), 8);
             });
 
-            animationId = requestAnimationFrame(animate);
+            queueThumbnailFrame(animate);
         }
         animate();
 
@@ -268,8 +307,8 @@ function initThumbnailCanvas(canvasId, type) {
         const rules = [
             { name: 'identifier', freq: 0.42, color: '#22c55e' },
             { name: 'expression', freq: 0.28, color: '#22c55e' },
-            { name: 'string', freq: 0.15, color: '#f59e0b' },
-            { name: 'call_expr', freq: 0.08, color: '#f59e0b' },
+            { name: 'string', freq: 0.15, color: '#3b82f6' },
+            { name: 'call_expr', freq: 0.08, color: '#3b82f6' },
             { name: 'for_stmt', freq: 0.04, color: '#ef4444' },
             { name: 'lambda', freq: 0.02, color: '#ef4444' },
             { name: 'context_mgr', freq: 0.01, color: '#ef4444' },
@@ -327,7 +366,7 @@ function initThumbnailCanvas(canvasId, type) {
             ctx.font = '8px "Space Grotesk", sans-serif';
             ctx.fillText('Grammar Coverage Distribution', 8, rect.height - 6);
 
-            animationId = requestAnimationFrame(animate);
+            queueThumbnailFrame(animate);
         }
         animate();
     }
@@ -351,6 +390,7 @@ const modal = document.getElementById('animation-modal');
 const modalClose = document.getElementById('modal-close');
 const thumbnails = document.querySelectorAll('.animation-thumbnail');
 let currentAnimation = null;
+let lastModalTrigger = null;
 
 function openModal(animationType) {
     modal.classList.add('active');
@@ -368,6 +408,7 @@ function openModal(animationType) {
     }
 
     currentAnimation = animationType;
+    window.requestAnimationFrame(() => modalClose && modalClose.focus());
 
     // Initialize the animation
     if (animationType === 'corefusion') {
@@ -387,12 +428,21 @@ function closeModal() {
     modal.classList.remove('active');
     document.body.style.overflow = '';
     currentAnimation = null;
+    if (lastModalTrigger) lastModalTrigger.focus();
 }
 
 thumbnails.forEach(thumb => {
     thumb.addEventListener('click', () => {
+        lastModalTrigger = thumb;
         const animationType = thumb.dataset.animation;
         openModal(animationType);
+    });
+    thumb.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            lastModalTrigger = thumb;
+            openModal(thumb.dataset.animation);
+        }
     });
 });
 
@@ -413,12 +463,32 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
         closeModal();
     }
+    if (e.key === 'Tab' && modal && modal.classList.contains('active')) {
+        const focusable = Array.from(modal.querySelectorAll(
+            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )).filter(element => element.offsetParent !== null);
+        if (!focusable.length) {
+            e.preventDefault();
+            return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
 });
 
 // Background Particle Animation (Restricted to Hero Section)
 const bgCanvas = document.getElementById('bg-canvas');
 const heroSection = document.getElementById('hero');
 const bgCtx = bgCanvas.getContext('2d');
+const shouldAnimateBg = getComputedStyle(bgCanvas).display !== 'none' &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let bgParticles = [];
 const bgParticleCount = 80;
@@ -430,7 +500,9 @@ function resizeBgCanvas() {
     initBgParticles();
 }
 
-window.addEventListener('resize', resizeBgCanvas);
+if (shouldAnimateBg) {
+    window.addEventListener('resize', resizeBgCanvas);
+}
 
 class BgParticle {
     constructor() {
@@ -489,8 +561,10 @@ function animateBgParticles() {
     requestAnimationFrame(animateBgParticles);
 }
 
-resizeBgCanvas();
-animateBgParticles();
+if (shouldAnimateBg) {
+    resizeBgCanvas();
+    animateBgParticles();
+}
 
 // =========================================
 // Avatar Pixel Animation with Photo
@@ -510,7 +584,7 @@ if (avatarCanvas) {
     // Load the real photo
     const photo = new Image();
     photo.crossOrigin = "anonymous";
-    photo.src = 'images/67e70fbf58af3118dc727599_欧签.jpg';
+    photo.src = 'images/yongcheng-huang-2026.jpg';
 
     // Claude-style minimal pixel avatar (abstract/geometric)
     // Using simple shapes: head circle + body
@@ -685,14 +759,14 @@ if (diffusionCanvas) {
 
     // Contact info with labels and noisy/clean versions
     const codeLines = [
-        { label: "email", noisy: "████████████████████", clean: "d4vidguess@gmail.com" },
+        { label: "email", noisy: "████████████████████", clean: "y.huang-12@tudelft.nl" },
         { label: "github", noisy: "██████████████████████", clean: "github.com/D4vidHuang" },
         { label: "scholar", noisy: "████████████████████", clean: "scholar.google.com/..." },
     ];
 
     // Store URLs for click handling
     const linkData = [
-        { url: "mailto:d4vidguess@gmail.com" },
+        { url: "mailto:y.huang-12@tudelft.nl" },
         { url: "https://github.com/D4vidHuang" },
         { url: "https://scholar.google.com/citations?user=C4xHgUMAAAAJ&hl" },
     ];
@@ -878,19 +952,21 @@ if (diffusionCanvas) {
 
 // Fade in elements on scroll
 const fadeElements = document.querySelectorAll('.card, .education-item, .research-item, .project-item, .medal, .interest-pill');
-fadeElements.forEach(el => {
-    gsap.from(el, {
-        scrollTrigger: {
-            trigger: el,
-            start: "top 90%",
-            toggleActions: "play none none reverse"
-        },
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power2.out"
+if (window.gsap && window.ScrollTrigger && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    fadeElements.forEach(el => {
+        gsap.from(el, {
+            scrollTrigger: {
+                trigger: el,
+                start: "top 90%",
+                toggleActions: "play none none reverse"
+            },
+            y: 20,
+            opacity: 0,
+            duration: 0.6,
+            ease: "power2.out"
+        });
     });
-});
+}
 
 
 /* =========================================
@@ -1421,7 +1497,7 @@ function initTaxonomyVisualization() {
             ]
         },
         {
-            code: 'LG', name: 'Linguistic', color: '#f59e0b',
+            code: 'LG', name: 'Linguistic', color: '#3b82f6',
             data: { total: 1728, chinese: 17, dutch: 224, english: 66, greek: 998, polish: 423 },
             children: [
                 {
@@ -1638,7 +1714,7 @@ function initBabelVisualization() {
             { code: 'ST-IF', name: 'Incorrect Format', count: 27 }
           ]
         },
-        { code: 'LG', name: 'Linguistic', count: 0, color: '#f59e0b',
+        { code: 'LG', name: 'Linguistic', count: 0, color: '#3b82f6',
           children: []
         }
     ];
@@ -1839,6 +1915,238 @@ function initBabelVisualization() {
 }
 
 // =========================================
+// Scholar snapshot and privacy-aware visitor data
+// =========================================
+function setupMobileNavigation() {
+    const toggle = document.querySelector('.menu-toggle');
+    const navigation = document.getElementById('primary-navigation');
+    if (!toggle || !navigation) return;
+
+    const closeNavigation = () => {
+        navigation.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'Menu';
+    };
+
+    toggle.addEventListener('click', () => {
+        const willOpen = !navigation.classList.contains('is-open');
+        navigation.classList.toggle('is-open', willOpen);
+        toggle.setAttribute('aria-expanded', String(willOpen));
+        toggle.textContent = willOpen ? 'Close' : 'Menu';
+    });
+
+    navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', closeNavigation));
+    document.addEventListener('click', event => {
+        if (navigation.classList.contains('is-open') && !event.target.closest('nav')) {
+            closeNavigation();
+        }
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && navigation.classList.contains('is-open')) {
+            closeNavigation();
+            toggle.focus();
+        }
+    });
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 820) closeNavigation();
+    });
+}
+
+function setText(id, value) {
+    const element = document.getElementById(id);
+    if (element && value !== undefined && value !== null) {
+        element.textContent = String(value);
+    }
+}
+
+function validMetric(value) {
+    return Number.isFinite(Number(value)) && Number(value) >= 0;
+}
+
+function renderCitationHistory(yearly) {
+    const history = document.querySelector('.citation-history');
+    if (!history) return;
+
+    const entries = Object.entries(yearly)
+        .filter(([year, citations]) => /^\d{4}$/.test(year) && validMetric(citations))
+        .sort(([firstYear], [secondYear]) => Number(firstYear) - Number(secondYear))
+        .slice(-5);
+    if (!entries.length) return;
+
+    const largestYear = Math.max(...entries.map(([, citations]) => Number(citations)), 1);
+    const fragment = document.createDocumentFragment();
+    entries.forEach(([year, citations]) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'history-bar-wrap';
+
+        const value = document.createElement('span');
+        value.className = 'history-value';
+        value.textContent = String(citations);
+
+        const bar = document.createElement('span');
+        bar.className = 'history-bar';
+        bar.style.setProperty('--bar-size', `${Math.max(7, Math.round((Number(citations) / largestYear) * 100))}%`);
+
+        const label = document.createElement('span');
+        label.className = 'history-year';
+        label.textContent = year;
+
+        wrapper.append(value, bar, label);
+        fragment.appendChild(wrapper);
+    });
+
+    history.replaceChildren(fragment);
+    history.setAttribute(
+        'aria-label',
+        `Citations by year: ${entries.map(([year, citations]) => `${citations} in ${year}`).join(', ')}`
+    );
+}
+
+async function loadScholarSnapshot() {
+    try {
+        const response = await fetch('data/scholar.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Scholar snapshot returned ${response.status}`);
+
+        const snapshot = await response.json();
+        const metrics = snapshot.metrics || {};
+        const yearly = snapshot.citations_by_year || {};
+
+        if (validMetric(metrics.citations)) setText('scholar-citations', metrics.citations);
+        if (validMetric(metrics.h_index)) setText('scholar-hindex', metrics.h_index);
+        if (validMetric(metrics.i10_index)) setText('scholar-i10index', metrics.i10_index);
+
+        renderCitationHistory(yearly);
+
+        const citationTargets = {
+            'promise-2025': 'publication-promise-citations',
+            'ntire-2025': 'publication-ntire-citations'
+        };
+        (snapshot.publications || []).forEach(publication => {
+            const target = citationTargets[publication.id];
+            if (target && validMetric(publication.citations)) setText(target, publication.citations);
+        });
+
+        const updated = new Date(snapshot.updated_at);
+        if (!Number.isNaN(updated.getTime())) {
+            const freshness = document.getElementById('scholar-updated');
+            const ageInDays = (Date.now() - updated.getTime()) / 86400000;
+            const formatted = new Intl.DateTimeFormat('en-GB', {
+                day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'
+            }).format(updated);
+            if (freshness) {
+                freshness.textContent = `Last verified ${formatted}${ageInDays > 14 ? ' · data may be stale' : ''}`;
+                freshness.classList.toggle('is-stale', ageInDays > 14);
+            }
+        }
+    } catch (error) {
+        console.warn('Using the embedded Google Scholar fallback snapshot.', error);
+    }
+}
+
+async function loadVisitorCount() {
+    const counter = document.getElementById('visitor-count');
+    if (!counter) return;
+
+    if (window.location.hostname.toLowerCase() !== 'd4vidhuang.github.io') {
+        counter.textContent = 'Preview';
+        return;
+    }
+
+    try {
+        const endpoint = 'https://counterapi.com/api/d4vidhuang.github.io/view/homepage-2026?unique=true';
+        const response = await fetch(endpoint, { mode: 'cors', credentials: 'omit' });
+        if (!response.ok) throw new Error(`Visitor counter returned ${response.status}`);
+        const data = await response.json();
+        if (!validMetric(data.value)) throw new Error('Visitor counter returned an invalid value');
+        counter.textContent = new Intl.NumberFormat('en').format(Number(data.value));
+    } catch (error) {
+        counter.textContent = '—';
+        console.warn('Visitor counter is currently unavailable.', error);
+    }
+}
+
+function setupVisitorMap() {
+    const button = document.getElementById('load-visitor-map');
+    const stage = document.getElementById('visitor-map-stage');
+    const status = document.getElementById('visitor-status');
+    if (!button || !stage) return;
+
+    button.addEventListener('click', () => {
+        if (stage.dataset.loaded === 'true') return;
+        stage.dataset.loaded = 'true';
+        button.disabled = true;
+        button.textContent = 'Loading map…';
+
+        const styles = getComputedStyle(stage);
+        const availableWidth = stage.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+        const mapWidth = Math.floor(Math.max(180, Math.min(650, availableWidth)));
+        const mapHeight = Math.round(mapWidth / 2);
+
+        window._wau = window._wau || [];
+        const queueIndex = window._wau.length;
+        window._wau.push(['map', 'jqx3tdk6lh', 'yhmap', String(mapWidth), String(mapHeight), 'textbook', 'default-blue']);
+
+        const marker = document.createElement('script');
+        marker.id = '_wauyhmap';
+        stage.appendChild(marker);
+
+        const widget = document.createElement('script');
+        widget.async = true;
+        widget.src = 'https://waust.at/m.js';
+        let timeoutId;
+        let settled = false;
+
+        const failMap = message => {
+            if (settled) return;
+            settled = true;
+            observer.disconnect();
+            window.clearTimeout(timeoutId);
+            marker.remove();
+            widget.remove();
+            const queuedWidget = window._wau[queueIndex];
+            if (queuedWidget && queuedWidget[2] === 'yhmap') window._wau.splice(queueIndex, 1);
+            if (Array.isArray(window.WAU_ren) && window.WAU_ren.length > queueIndex) {
+                window.WAU_ren.splice(queueIndex, 1);
+            }
+            stage.dataset.loaded = 'false';
+            button.disabled = false;
+            button.textContent = 'Try live visitor map again';
+            if (status) status.textContent = message;
+        };
+
+        const observer = new MutationObserver(() => {
+            const liveMap = Array.from(stage.children).find(child =>
+                child.tagName === 'SPAN' && child.querySelector('img')
+            );
+            if (!liveMap || settled) return;
+            settled = true;
+            observer.disconnect();
+            window.clearTimeout(timeoutId);
+            liveMap.classList.add('visitor-live-widget');
+            stage.classList.add('is-live');
+            if (status) status.textContent = 'Live, approximate locations are now loaded from Whos.amung.us. They represent only visitors who opt in to this separate map, not everyone in the total above.';
+        });
+        observer.observe(stage, { childList: true });
+
+        widget.addEventListener('load', () => {
+            if (status) status.textContent = 'Map service connected; waiting for live location data…';
+        });
+        widget.addEventListener('error', () => {
+            failMap('The location widget could not be loaded. The local privacy-friendly map remains visible.');
+        });
+        stage.appendChild(widget);
+        timeoutId = window.setTimeout(() => {
+            failMap('The location service did not return data in time. The local privacy-friendly map remains visible.');
+        }, 12000);
+    });
+}
+
+setupMobileNavigation();
+loadScholarSnapshot();
+loadVisitorCount();
+setupVisitorMap();
+
+// =========================================
 // Coverage Visualization (Honor Program)
 // =========================================
 let coverageInitialized = false;
@@ -1865,8 +2173,8 @@ function initCoverageVisualization() {
                 { name: 'expression_statement', count: 25.3, color: '#22c55e' },
                 { name: 'string_literal', count: 12.8, color: '#3b82f6' },
                 { name: 'call_expression', count: 8.4, color: '#3b82f6' },
-                { name: 'binary_expression', count: 5.2, color: '#f59e0b' },
-                { name: 'for_statement', count: 2.8, color: '#f59e0b' },
+                { name: 'binary_expression', count: 5.2, color: '#3b82f6' },
+                { name: 'for_statement', count: 2.8, color: '#3b82f6' },
                 { name: 'if_statement', count: 1.9, color: '#ef4444' },
                 { name: 'lambda_expression', count: 0.8, color: '#ef4444' },
                 { name: 'context_manager', count: 0.4, color: '#ef4444' },
@@ -1884,8 +2192,8 @@ function initCoverageVisualization() {
                 { name: 'method_invocation', count: 22.1, color: '#22c55e' },
                 { name: 'class_declaration', count: 15.4, color: '#3b82f6' },
                 { name: 'field_access', count: 9.8, color: '#3b82f6' },
-                { name: 'variable_declarator', count: 6.2, color: '#f59e0b' },
-                { name: 'for_statement', count: 3.1, color: '#f59e0b' },
+                { name: 'variable_declarator', count: 6.2, color: '#3b82f6' },
+                { name: 'for_statement', count: 3.1, color: '#3b82f6' },
                 { name: 'if_statement', count: 2.4, color: '#ef4444' },
                 { name: 'lambda_expression', count: 1.2, color: '#ef4444' },
                 { name: 'try_statement', count: 0.8, color: '#ef4444' },
@@ -1903,8 +2211,8 @@ function initCoverageVisualization() {
                 { name: 'call_expression', count: 24.6, color: '#22c55e' },
                 { name: 'string', count: 14.2, color: '#3b82f6' },
                 { name: 'member_expression', count: 10.1, color: '#3b82f6' },
-                { name: 'arrow_function', count: 5.8, color: '#f59e0b' },
-                { name: 'object', count: 4.2, color: '#f59e0b' },
+                { name: 'arrow_function', count: 5.8, color: '#3b82f6' },
+                { name: 'object', count: 4.2, color: '#3b82f6' },
                 { name: 'array', count: 2.1, color: '#ef4444' },
                 { name: 'template_string', count: 1.4, color: '#ef4444' },
                 { name: 'class_declaration', count: 0.9, color: '#ef4444' },
@@ -1922,8 +2230,8 @@ function initCoverageVisualization() {
                 { name: 'macro_invocation', count: 21.8, color: '#22c55e' },
                 { name: 'call_expression', count: 16.2, color: '#3b82f6' },
                 { name: 'field_expression', count: 11.4, color: '#3b82f6' },
-                { name: 'let_declaration', count: 7.8, color: '#f59e0b' },
-                { name: 'match_expression', count: 4.2, color: '#f59e0b' },
+                { name: 'let_declaration', count: 7.8, color: '#3b82f6' },
+                { name: 'match_expression', count: 4.2, color: '#3b82f6' },
                 { name: 'impl_item', count: 2.8, color: '#ef4444' },
                 { name: 'trait_item', count: 1.6, color: '#ef4444' },
                 { name: 'lifetime', count: 0.9, color: '#ef4444' },
@@ -1941,8 +2249,8 @@ function initCoverageVisualization() {
                 { name: 'call_expression', count: 23.4, color: '#22c55e' },
                 { name: 'selector_expression', count: 13.8, color: '#3b82f6' },
                 { name: 'short_var_declaration', count: 8.6, color: '#3b82f6' },
-                { name: 'if_statement', count: 5.4, color: '#f59e0b' },
-                { name: 'for_statement', count: 3.8, color: '#f59e0b' },
+                { name: 'if_statement', count: 5.4, color: '#3b82f6' },
+                { name: 'for_statement', count: 3.8, color: '#3b82f6' },
                 { name: 'func_literal', count: 2.1, color: '#ef4444' },
                 { name: 'defer_statement', count: 1.2, color: '#ef4444' },
                 { name: 'go_statement', count: 0.7, color: '#ef4444' },
@@ -2156,7 +2464,7 @@ function initCoverageVisualization() {
             ctx.fillRect(rightX + 30, barY, rightWidth - 35, barHeight);
 
             // Bar fill
-            const barColor = item.offset > 3.5 ? '#ef4444' : item.offset > 2.5 ? '#f59e0b' : '#22c55e';
+            const barColor = item.offset > 3.5 ? '#ef4444' : item.offset > 2.5 ? '#3b82f6' : '#22c55e';
             ctx.fillStyle = barColor + '80';
             ctx.fillRect(rightX + 30, barY, Math.max(0, barWidth + wave), barHeight);
 

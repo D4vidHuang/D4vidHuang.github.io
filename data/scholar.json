@@ -1,0 +1,40 @@
+{
+  "source": "Google Scholar",
+  "profile_id": "C4xHgUMAAAAJ",
+  "profile_url": "https://scholar.google.com/citations?user=C4xHgUMAAAAJ&hl=en",
+  "updated_at": "2026-09-10T11:04:39Z",
+  "metrics": {
+    "citations": 53,
+    "h_index": 2,
+    "i10_index": 1,
+    "recent_since_year": 2021,
+    "recent": {
+      "citations": 53,
+      "h_index": 2,
+      "i10_index": 1
+    }
+  },
+  "citations_by_year": {
+    "2024": 2,
+    "2025": 27,
+    "2026": 22
+  },
+  "publications": [
+    {
+      "id": "ntire-2025",
+      "scholar_id": "C4xHgUMAAAAJ:u5HHmVD_uO8C",
+      "title": "NTIRE 2025 Challenge on Day and Night Raindrop Removal for Dual-Focused Images: Methods and Results",
+      "year": 2025,
+      "citations": 44,
+      "url": "https://openaccess.thecvf.com/content/CVPR2025W/NTIRE/html/Li_NTIRE_2025_Challenge_on_Day_and_Night_Raindrop_Removal_for_CVPRW_2025_paper.html"
+    },
+    {
+      "id": "promise-2025",
+      "scholar_id": "C4xHgUMAAAAJ:d1gkVwhDpl0C",
+      "title": "A Qualitative Investigation into LLM-Generated Multilingual Code Comments and Automatic Evaluation Metrics",
+      "year": 2025,
+      "citations": 9,
+      "url": "https://doi.org/10.1145/3727582.3728683"
+    }
+  ]
+}

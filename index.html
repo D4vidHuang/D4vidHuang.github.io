@@ -1,12 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yongcheng Huang | AI & Software Engineering</title>
+    <meta name="description" content="Yongcheng Huang is a PhD candidate at TU Delft researching AI-enabled software engineering, code refactoring, and coding agents.">
+    <meta name="theme-color" content="#f4f8fa">
+    <script>document.documentElement.classList.replace('no-js', 'js');</script>
+    <link rel="canonical" href="https://d4vidhuang.github.io/">
+    <meta property="og:title" content="Yongcheng Huang · PhD Candidate at TU Delft">
+    <meta property="og:description" content="Researching AI-enabled software engineering, automated code refactoring, and coding agents.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://d4vidhuang.github.io/">
+    <meta property="og:image" content="https://d4vidhuang.github.io/images/yongcheng-huang-2026.jpg">
+    <title>Yongcheng Huang | PhD Candidate at TU Delft</title>
+    <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&amp;display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>
@@ -16,11 +26,13 @@
         <header>
             <nav>
                 <div class="logo">YH.</div>
-                <div class="links">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">Menu</button>
+                <div class="links" id="primary-navigation">
                     <a href="#about">About</a>
-                    <a href="#vision">Vision</a>
                     <a href="#research">Research</a>
-                    <a href="#projects">Projects</a>
+                    <a href="#publications">Publications</a>
+                    <a href="#service">Service</a>
+                    <a href="#visitors">Visitors</a>
                     <a href="#contact">Contact</a>
                 </div>
             </nav>
@@ -30,19 +42,20 @@
             <section id="hero">
                 <canvas id="bg-canvas"></canvas>
                 <div class="hero-content">
+                    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> PhD Candidate · TU Delft</p>
                     <h1 class="glitch" data-text="Yongcheng Huang">Yongcheng Huang</h1>
                     <h2 class="subtitle">黄永橙</h2>
-                    <p class="tagline">MSc Student in TUDelft, AISE Lab.<br>Research Interests: <span class="highlight">LLM4Code</span>, <span class="highlight">LLM</span> and <span class="highlight">AGI</span>.</p>
+                    <p class="hero-lede">I research how AI can understand, improve, and refactor software.</p>
+                    <p class="tagline">PhD candidate in the <strong>FUSE Lab</strong> and <strong>Software Engineering Research Group</strong> at Delft University of Technology.</p>
+                    <div class="hero-actions">
+                        <a href="#research" class="btn btn-primary">Explore my research</a>
+                        <a href="https://scholar.google.com/citations?user=C4xHgUMAAAAJ&amp;hl=en" target="_blank" rel="noreferrer" class="text-link">Google Scholar <span aria-hidden="true">↗</span></a>
+                    </div>
                 </div>
-                
-                <!-- Diffusion Contact Animation -->
-                <div class="hero-contact-section">
-                    <div class="avatar-container">
-                        <canvas id="avatar-canvas"></canvas>
-                    </div>
-                    <div class="diffusion-canvas-container">
-                        <canvas id="diffusion-canvas"></canvas>
-                    </div>
+                <div class="hero-portrait-wrap">
+                    <div class="portrait-accent" aria-hidden="true"></div>
+                    <img class="hero-portrait" src="images/yongcheng-huang-2026.jpg" alt="Portrait of Yongcheng Huang" width="1200" height="1200">
+                    <p class="portrait-note">Delft, the Netherlands · 2026</p>
                 </div>
             </section>
 
@@ -50,75 +63,80 @@
 
             <section id="about">
                 <div class="section-header">
-                    <h3>// About Me</h3>
+                    <p class="section-kicker">About</p>
+                    <h3>Building dependable AI for software work.</h3>
                 </div>
                 <div class="two-column-layout">
                     <div class="col-left">
-                        <p class="intro-text">I am a MSc student in the <strong>Software Engineering Research Group (SERG)</strong> at <strong>Delft University of Technology</strong>. My research focuses on the intersection of <strong>Software Engineering</strong> and <strong>Artificial Intelligence</strong>, specifically exploring how Large Language Models can revolutionize software development.</p>
+                        <p class="intro-text">I am a PhD candidate in the <strong>FUSE Lab</strong> and <strong>Software Engineering Research Group (SERG)</strong> at <strong>Delft University of Technology</strong>. I study how language models and coding agents can make software refactoring more autonomous, verifiable, and useful to developers.</p>
                         <div class="stats-row">
                             <div class="stat-item">
-                                <span class="stat-number">3+</span>
-                                <span class="stat-label">Years Research</span>
+                                <span class="stat-number">2</span>
+                                <span class="stat-label">Peer-reviewed papers</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-number">4</span>
-                                <span class="stat-label">Publications</span>
+                                <span class="stat-number">2</span>
+                                <span class="stat-label">TU Delft theses</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">03</span>
+                                <span class="stat-label">FUSE Lab track</span>
                             </div>
                         </div>
-                        <br>
-                        <a href="https://europa.eu/europass/eportfolio/api/eprofile/shared-profile/yongcheng-huang/2d923b7c-2bb2-40ce-8960-2da09f5880ef?view=html" target="_blank" class="btn btn-primary">Download CV</a>
+                        <a href="https://se.ewi.tudelft.nl/fuse-lab/tracks/03_automated_refactoring/" target="_blank" rel="noreferrer" class="text-link about-link">Explore FUSE Lab Track 3 <span aria-hidden="true">↗</span></a>
                     </div>
                     <div class="col-right">
-                        <!-- Education Timeline Simplified -->
                         <div class="timeline">
-                            <div class="timeline-item">
-                                <span class="year">2024 - 2026</span>
+                            <div class="timeline-item timeline-current">
+                                <span class="year">2026 — now</span>
                                 <div class="content">
-                                    <h4>MSc Data Science & AI</h4>
-                                    <span>TU Delft</span>
-                                    <p class="supervisor">Supervisors: Maliheh Izadi, Arie van Deursen</p>
+                                    <h4>PhD Candidate</h4>
+                                    <span>TU Delft · FUSE Lab &amp; SERG</span>
+                                    <p class="supervisor">Automated code refactoring and coding agents</p>
                                 </div>
                             </div>
                             <div class="timeline-item">
-                                <span class="year">2021 - 2024</span>
+                                <span class="year">2024 — 2026</span>
                                 <div class="content">
-                                    <h4>BSc Computer Science</h4>
+                                    <h4>MSc Computer Science</h4>
+                                    <span>TU Delft</span>
+                                    <p class="supervisor">Thesis: CoReFusion</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <span class="year">2021 — 2024</span>
+                                <div class="content">
+                                    <h4>BSc Computer Science &amp; Engineering</h4>
                                     <span>TU Delft</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
-
-            <section id="vision">
-                <div class="section-header">
-                    <h3>// Vision</h3>
-                </div>
-                <div class="vision-content">
-                    <p class="vision-statement">Bridge the gap between <span class="highlight">application</span> and <span class="highlight">research</span>.</p>
                 </div>
             </section>
 
             <section id="research">
                 <div class="section-header">
-                    <h3>// Research Interests</h3>
+                    <p class="section-kicker">Research</p>
+                    <h3>AI-enabled software engineering, from models to agents.</h3>
+                    <p class="section-intro">My work connects generative models with concrete software maintenance tasks, with an emphasis on refactoring quality, evaluation, and developer control.</p>
                 </div>
                 <div class="research-interests-container">
-                    <div class="interest-pill">Software Engineering</div>
-                    <div class="interest-pill">Large Language Models</div>
-                    <div class="interest-pill">Generative Models</div>
-                    <div class="interest-pill">LLM Applications</div>
-                    <div class="interest-pill">ML for SE</div>
+                    <div class="interest-pill">Automated Code Refactoring</div>
+                    <div class="interest-pill">Coding Agents</div>
+                    <div class="interest-pill">AI-enabled Software Engineering</div>
+                    <div class="interest-pill">LLMs for Code</div>
+                    <div class="interest-pill">Diffusion Language Models</div>
                 </div>
 
                 <div class="section-header" style="margin-top: 60px;">
-                    <h3>// Featured Researches</h3>
+                    <p class="section-kicker">Selected work</p>
+                    <h3>Research you can explore.</h3>
                 </div>
                 <div class="research-list">
 
                     <!-- Thumbnail Cards for Animations -->
-                    <div class="animation-thumbnail" data-animation="corefusion">
+                    <div class="animation-thumbnail" data-animation="corefusion" role="button" tabindex="0" aria-label="Explore the CoReFusion research visualization">
                         <canvas class="thumbnail-canvas" id="thumb-corefusion"></canvas>
                         <div class="thumbnail-info">
                             <span class="research-tag">MSc Thesis</span>
@@ -128,7 +146,7 @@
                         <div class="thumbnail-hint">Click to explore</div>
                     </div>
 
-                    <div class="animation-thumbnail" data-animation="dfusion">
+                    <div class="animation-thumbnail" data-animation="dfusion" role="button" tabindex="0" aria-label="Explore the TUDelft Dfusion research visualization">
                         <canvas class="thumbnail-canvas" id="thumb-dfusion"></canvas>
                         <div class="thumbnail-info">
                             <span class="research-tag workshop-tag">Workshop</span>
@@ -138,7 +156,7 @@
                         <div class="thumbnail-hint">Click to explore</div>
                     </div>
 
-                    <div class="animation-thumbnail" data-animation="taxonomy">
+                    <div class="animation-thumbnail" data-animation="taxonomy" role="button" tabindex="0" aria-label="Explore the multilingual code comments research visualization">
                         <canvas class="thumbnail-canvas" id="thumb-taxonomy"></canvas>
                         <div class="thumbnail-info">
                             <span class="research-tag publication-tag">Publication</span>
@@ -148,7 +166,7 @@
                         <div class="thumbnail-hint">Click to explore</div>
                     </div>
 
-                    <div class="animation-thumbnail" data-animation="babel">
+                    <div class="animation-thumbnail" data-animation="babel" role="button" tabindex="0" aria-label="Explore the LLM of Babel research visualization">
                         <canvas class="thumbnail-canvas" id="thumb-babel"></canvas>
                         <div class="thumbnail-info">
                             <span class="research-tag thesis-tag">BSc Thesis</span>
@@ -158,7 +176,7 @@
                         <div class="thumbnail-hint">Click to explore</div>
                     </div>
 
-                    <div class="animation-thumbnail" data-animation="coverage">
+                    <div class="animation-thumbnail" data-animation="coverage" role="button" tabindex="0" aria-label="Explore the language coverage research visualization">
                         <canvas class="thumbnail-canvas" id="thumb-coverage"></canvas>
                         <div class="thumbnail-info">
                             <span class="research-tag honor-tag">Honor Program</span>
@@ -170,19 +188,19 @@
 
                     <div class="research-item">
                         <h4>ToBeContinued: A Smart Trigger Model for Code Completions</h4>
-                        <span class="meta">Preprint</span>
+                        <span class="meta">Ongoing research</span>
                         <p>In this paper, we propose an intelligent trigger model that combines rule-based filtering with deep learning on telemetry and code context data to efficiently decide when to invoke a large language model for code completion, reducing unnecessary computations while enhancing developer productivity.</p>
                     </div>
                 </div>
 
                 <!-- Animation Modal Overlay -->
-                <div class="animation-modal" id="animation-modal">
-                    <div class="modal-close" id="modal-close">
+                <div class="animation-modal" id="animation-modal" role="dialog" aria-modal="true" aria-label="Interactive research visualization">
+                    <button type="button" class="modal-close" id="modal-close" aria-label="Close research visualization">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
-                    </div>
+                    </button>
                     <div class="modal-content">
                         <!-- CoReFusion Animation -->
                         <div class="modal-animation" id="modal-corefusion">
@@ -203,7 +221,7 @@
                                 </div>
                                 <div class="legend">
                                     <div class="legend-item">
-                                        <span class="legend-tok" style="background:rgba(255,255,255,0.05);border:1.5px dashed rgba(255,255,255,0.2);color:#888">[M]</span>
+                                        <span class="legend-tok" style="background:rgba(16,42,50,0.04);border:1.5px dashed rgba(16,42,50,0.2);color:#526b73">[M]</span>
                                         masked
                                     </div>
                                     <div class="legend-item">
@@ -254,8 +272,8 @@
                                     <p>Dfusion combines two pretrained diffusion models (RDiffusion and DiT) through a lightweight fusion CNN for raindrop removal. Each model excels at different aspects — one for smooth textures, the other for fine details. The fusion network merges their strengths, achieving robust restoration in both day and night conditions.</p>
                                 </div>
                                 <div class="dfusion-rank">
-                                    <span class="rank-number">13</span>
-                                    <span class="rank-label">World Rank</span>
+                                    <span class="rank-number">14</span>
+                                    <span class="rank-label">Challenge rank</span>
                                 </div>
                                 <div class="dfusion-slogan">
                                     <p class="slogan-cn">无论远近 不分昼夜</p>
@@ -267,7 +285,7 @@
                                     <canvas id="dfusion-canvas"></canvas>
                                 </div>
                                 <div class="dfusion-hint">
-                                    <span>Hover to deblur · Click & drag to restore</span>
+                                    <span>Hover to deblur · Click &amp; drag to restore</span>
                                 </div>
                             </div>
                         </div>
@@ -341,7 +359,7 @@
                                         <span>ST: Syntax Errors</span>
                                     </div>
                                     <div class="legend-item">
-                                        <span class="legend-color" style="background: #f59e0b"></span>
+                                        <span class="legend-color" style="background: #3b82f6"></span>
                                         <span>LG: Linguistic Errors (0 in Chinese)</span>
                                     </div>
                                 </div>
@@ -383,7 +401,7 @@
                                         <span>High Frequency Rules</span>
                                     </div>
                                     <div class="legend-item">
-                                        <span class="legend-color" style="background: #f59e0b"></span>
+                                        <span class="legend-color" style="background: #3b82f6"></span>
                                         <span>Medium Frequency</span>
                                     </div>
                                     <div class="legend-item">
@@ -404,39 +422,192 @@
                     </div>
                 </div>
             </section>
+
+            <section id="publications">
+                <div class="section-header section-header-split">
+                    <div>
+                        <p class="section-kicker">Publications</p>
+                        <h3>Peer-reviewed work and theses.</h3>
+                    </div>
+                    <a class="text-link" href="https://scholar.google.com/citations?user=C4xHgUMAAAAJ&amp;hl=en" target="_blank" rel="noreferrer">Full Google Scholar profile <span aria-hidden="true">↗</span></a>
+                </div>
+
+                <aside class="scholar-overview" aria-labelledby="scholar-heading">
+                    <div class="scholar-summary">
+                        <p class="card-label" id="scholar-heading"><span class="status-dot" aria-hidden="true"></span> Google Scholar snapshot</p>
+                        <p class="scholar-copy">A daily workflow checks the public profile and keeps the last verified result when Scholar is unavailable.</p>
+                        <p class="data-freshness" id="scholar-updated">Last verified 10 Sep 2026</p>
+                    </div>
+                    <div class="metric-grid">
+                        <div class="metric">
+                            <span class="metric-value" id="scholar-citations">53</span>
+                            <span class="metric-label">Citations</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="scholar-hindex">2</span>
+                            <span class="metric-label">h-index</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="scholar-i10index">1</span>
+                            <span class="metric-label">i10-index</span>
+                        </div>
+                    </div>
+                    <div class="citation-history" aria-label="Citations by year: 2 in 2024, 27 in 2025, and 22 in 2026">
+                        <div class="history-bar-wrap"><span class="history-value" id="citations-2024">2</span><span class="history-bar" id="bar-2024" style="--bar-size: 7%;"></span><span class="history-year">2024</span></div>
+                        <div class="history-bar-wrap"><span class="history-value" id="citations-2025">27</span><span class="history-bar" id="bar-2025" style="--bar-size: 100%;"></span><span class="history-year">2025</span></div>
+                        <div class="history-bar-wrap"><span class="history-value" id="citations-2026">22</span><span class="history-bar" id="bar-2026" style="--bar-size: 81%;"></span><span class="history-year">2026</span></div>
+                    </div>
+                </aside>
+
+                <div class="publication-group">
+                    <div class="group-heading">
+                        <h4>Peer-reviewed publications</h4>
+                        <span>02</span>
+                    </div>
+                    <div class="publication-list">
+                        <article class="publication-item">
+                            <div class="publication-index">01</div>
+                            <div class="publication-body">
+                                <p class="publication-meta">PROMISE 2025 · Research paper</p>
+                                <h4>A Qualitative Investigation into LLM-Generated Multilingual Code Comments and Automatic Evaluation Metrics</h4>
+                                <p class="publication-authors">Jonathan Katzy, <strong>Yongcheng Huang</strong>, Gopal-Raj Panchu, Maksym Ziemlewski, Paris Loizides, Sander Vermeulen, Arie van Deursen, and Maliheh Izadi</p>
+                                <div class="publication-links">
+                                    <a href="https://doi.org/10.1145/3727582.3728683" target="_blank" rel="noreferrer">DOI <span aria-hidden="true">↗</span></a>
+                                    <a href="https://arxiv.org/abs/2505.15469" target="_blank" rel="noreferrer">arXiv <span aria-hidden="true">↗</span></a>
+                                    <span><strong id="publication-promise-citations">9</strong> Scholar citations</span>
+                                </div>
+                            </div>
+                        </article>
+                        <article class="publication-item">
+                            <div class="publication-index">02</div>
+                            <div class="publication-body">
+                                <p class="publication-meta">CVPR Workshops 2025 · Challenge paper</p>
+                                <h4>NTIRE 2025 Challenge on Day and Night Raindrop Removal for Dual-Focused Images: Methods and Results</h4>
+                                <p class="publication-authors">Minghan Li et al., including <strong>Yongcheng Huang</strong> with Team TUDelft Dfusion</p>
+                                <div class="publication-links">
+                                    <a href="https://openaccess.thecvf.com/content/CVPR2025W/NTIRE/html/Li_NTIRE_2025_Challenge_on_Day_and_Night_Raindrop_Removal_for_CVPRW_2025_paper.html" target="_blank" rel="noreferrer">CVF paper <span aria-hidden="true">↗</span></a>
+                                    <a href="https://arxiv.org/abs/2504.12711" target="_blank" rel="noreferrer">arXiv <span aria-hidden="true">↗</span></a>
+                                    <span><strong id="publication-ntire-citations">44</strong> Scholar citations</span>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="publication-group thesis-group">
+                    <div class="group-heading">
+                        <h4>Theses</h4>
+                        <span>02</span>
+                    </div>
+                    <div class="thesis-grid">
+                        <article class="thesis-card">
+                            <p class="publication-meta">MSc thesis · 2026</p>
+                            <h4>CoReFusion: Refactoring Identifier Names with Diffusion Large Language Models</h4>
+                            <a class="text-link" href="https://repository.tudelft.nl/record/uuid:bab9f754-82b2-405c-95b4-83d7921949da" target="_blank" rel="noreferrer">TU Delft repository <span aria-hidden="true">↗</span></a>
+                        </article>
+                        <article class="thesis-card">
+                            <p class="publication-meta">BSc thesis · 2024</p>
+                            <h4>LLM of Babel: Evaluation of LLMs on Code for Non-English Use-cases</h4>
+                            <a class="text-link" href="https://repository.tudelft.nl/record/uuid:381c703d-d5b8-490a-9d85-31f5a1d7692a" target="_blank" rel="noreferrer">TU Delft repository <span aria-hidden="true">↗</span></a>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section id="service">
+                <div class="section-header">
+                    <p class="section-kicker">Academic service</p>
+                    <h3>Responsibilities beyond my own research.</h3>
+                </div>
+                <div class="service-list">
+                    <a class="service-item" href="https://conf.researchr.org/home/icse-2027" target="_blank" rel="noreferrer">
+                        <span class="service-year">2027</span>
+                        <span class="service-role">Reviewer</span>
+                        <span class="service-name">International Conference on Software Engineering · ICSE 2027</span>
+                        <span class="service-arrow" aria-hidden="true">↗</span>
+                    </a>
+                    <a class="service-item" href="https://7amin.github.io/diffulm-neurips2026/" target="_blank" rel="noreferrer">
+                        <span class="service-year">2026</span>
+                        <span class="service-role">Reviewer</span>
+                        <span class="service-name">DiffuLM Workshop @ NeurIPS 2026</span>
+                        <span class="service-arrow" aria-hidden="true">↗</span>
+                    </a>
+                    <a class="service-item" href="https://se.ewi.tudelft.nl/events" target="_blank" rel="noreferrer">
+                        <span class="service-year">Ongoing</span>
+                        <span class="service-role">Seminar host</span>
+                        <span class="service-name">TU Delft Software Engineering Research Group Seminars</span>
+                        <span class="service-arrow" aria-hidden="true">↗</span>
+                    </a>
+                </div>
+            </section>
             
             <section id="projects">
-                <h3>// Projects</h3>
+                <div class="section-header">
+                    <p class="section-kicker">Projects</p>
+                    <h3>Selected things I have helped build.</h3>
+                </div>
                 <div class="project-list">
                     <div class="project-item">
                         <h4>Alpha-built</h4>
-                        <p>Alpha-built is designed to be next generation of online, multi-worker, light-weight architecture design platform. With git like version control system, we are able to empower the future of architecture design.</p>
+                        <p>A lightweight, collaborative architecture-design platform with Git-inspired version control for distributed teams.</p>
                     </div>
 
                     <div class="project-item">
                         <h4>LPCV2023</h4>
-                        <p>During this challenge, we implemented a method of implementing segmentation tasks in Jetson Nano with only 5w power consumption.</p>
+                        <p>An efficient semantic-segmentation system built for a Jetson Nano under a five-watt power budget.</p>
                     </div>
 
                     <div class="project-item">
                         <h4>Green LLAMA</h4>
-                        <p>Green Llama is a tool that monitors the energy and environmental impact of LLMs—tracking CPU, GPU, and RAM usage—to help optimize efficiency and reduce carbon emissions.</p>
+                        <p>A tool for measuring the energy footprint of language-model workloads across CPU, GPU, and memory usage.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="visitors">
+                <div class="section-header section-header-split">
+                    <div>
+                        <p class="section-kicker">Visitors</p>
+                        <h3>Where this page reaches.</h3>
+                    </div>
+                    <div class="visitor-total" aria-live="polite">
+                        <span class="visitor-count" id="visitor-count">—</span>
+                        <span class="visitor-label">unique visits since this counter launched</span>
+                    </div>
+                </div>
+                <div class="visitor-map-card">
+                    <div class="visitor-map-stage" id="visitor-map-stage">
+                        <img src="images/visitor-map-base.svg" alt="Equal Earth world map shown before live visitor locations are loaded" width="2048" height="997" id="visitor-map-placeholder">
+                        <div class="visitor-map-control" id="visitor-map-control">
+                            <p>Live locations are off by default.</p>
+                            <button type="button" class="btn btn-primary" id="load-visitor-map">Load live visitor map</button>
+                        </div>
+                    </div>
+                    <div class="visitor-map-footer">
+                        <p id="visitor-status">The total uses <a href="https://counterapi.com/" target="_blank" rel="noreferrer">CounterAPI's anonymized visitor hash</a>. Loading the separate map sends page and device data to Whos.amung.us and its supporting services; map locations cover only people who opt in, not everyone in the total.</p>
+                        <a href="https://whos.amung.us/legal/privacy/" target="_blank" rel="noreferrer">Widget privacy policy <span aria-hidden="true">↗</span></a>
                     </div>
                 </div>
             </section>
 
             <section id="contact">
-                <h3>// Connect</h3>
+                <div class="section-header">
+                    <p class="section-kicker">Contact</p>
+                    <h3>Let’s talk about software engineering and AI.</h3>
+                    <p class="section-intro">For research conversations, collaborations, or seminar ideas, email is the most direct route.</p>
+                </div>
                 <div class="social-links">
-                    <a href="https://github.com/D4vidHuang" target="_blank" class="btn">GitHub</a>
-                    <a href="mailto:Y.Huang-51@student.tudelft.nl" class="btn">Email</a>
-                    <a href="#" class="btn">LinkedIn</a>
+                    <a href="mailto:y.huang-12@tudelft.nl" class="btn btn-primary">Email me</a>
+                    <a href="https://github.com/D4vidHuang" target="_blank" rel="noreferrer" class="btn">GitHub</a>
+                    <a href="https://www.linkedin.com/in/yongcheng-huang-26b14a263/" target="_blank" rel="noreferrer" class="btn">LinkedIn</a>
+                    <a href="https://orcid.org/0000-0002-7987-6317" target="_blank" rel="noreferrer" class="btn">ORCID</a>
                 </div>
             </section>
         </main>
 
         <footer>
-            <p>&copy; 2024 Yongcheng Huang. Designed with AI.</p>
+            <p>&copy; 2026 Yongcheng Huang.</p>
+            <p>Built in Delft with curiosity and code · <a href="privacy.html">Privacy</a></p>
         </footer>
     </div>
 
