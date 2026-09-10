@@ -257,7 +257,10 @@ def fetch_serpapi(api_key: str, timeout: float) -> dict[str, object]:
         raise RuntimeError(f"unexpected SerpAPI status: {status!r}")
 
     parameters = payload.get("search_parameters")
+    engine = parameters.get("engine") if isinstance(parameters, dict) else None
     author_id = parameters.get("author_id") if isinstance(parameters, dict) else None
+    if engine != "google_scholar_author":
+        raise RuntimeError("SerpAPI response used an unexpected search engine")
     if author_id != PROFILE_ID:
         raise RuntimeError("SerpAPI response is for a different Scholar profile")
 
