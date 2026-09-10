@@ -14,7 +14,9 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    # Scholar blocks common Linux datacenter traffic; the macOS runner is closer
+    # to the local environment where the public profile is verified successfully.
+    runs-on: macos-latest
     timeout-minutes: 5
     steps:
       - name: Check out the default branch
