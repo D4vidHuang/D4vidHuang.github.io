@@ -2,7 +2,6 @@
   "source": "Google Scholar",
   "profile_id": "C4xHgUMAAAAJ",
   "profile_url": "https://scholar.google.com/citations?user=C4xHgUMAAAAJ&hl=en",
-  "updated_at": "2026-09-10T11:04:39Z",
   "metrics": {
     "citations": 53,
     "h_index": 2,
@@ -36,5 +35,6 @@
       "citations": 9,
       "url": "https://doi.org/10.1145/3727582.3728683"
     }
-  ]
+  ],
+  "updated_at": "2026-09-12T08:41:56Z"
 }
