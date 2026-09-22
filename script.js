@@ -951,7 +951,7 @@ if (diffusionCanvas) {
 
 
 // Fade in elements on scroll
-const fadeElements = document.querySelectorAll('.card, .education-item, .research-item, .project-item, .medal, .interest-pill');
+const fadeElements = document.querySelectorAll('.card, .education-item, .project-item, .medal, .interest-pill');
 if (window.gsap && window.ScrollTrigger && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     fadeElements.forEach(el => {
         gsap.from(el, {
@@ -1915,7 +1915,7 @@ function initBabelVisualization() {
 }
 
 // =========================================
-// Scholar snapshot and privacy-aware visitor data
+// Scholar snapshot and navigation
 // =========================================
 function setupMobileNavigation() {
     const toggle = document.querySelector('.menu-toggle');
@@ -2043,108 +2043,8 @@ async function loadScholarSnapshot() {
     }
 }
 
-async function loadVisitorCount() {
-    const counter = document.getElementById('visitor-count');
-    if (!counter) return;
-
-    if (window.location.hostname.toLowerCase() !== 'd4vidhuang.github.io') {
-        counter.textContent = 'Preview';
-        return;
-    }
-
-    try {
-        const endpoint = 'https://counterapi.com/api/d4vidhuang.github.io/view/homepage-2026?unique=true';
-        const response = await fetch(endpoint, { mode: 'cors', credentials: 'omit' });
-        if (!response.ok) throw new Error(`Visitor counter returned ${response.status}`);
-        const data = await response.json();
-        if (!validMetric(data.value)) throw new Error('Visitor counter returned an invalid value');
-        counter.textContent = new Intl.NumberFormat('en').format(Number(data.value));
-    } catch (error) {
-        counter.textContent = '—';
-        console.warn('Visitor counter is currently unavailable.', error);
-    }
-}
-
-function setupVisitorMap() {
-    const button = document.getElementById('load-visitor-map');
-    const stage = document.getElementById('visitor-map-stage');
-    const status = document.getElementById('visitor-status');
-    if (!button || !stage) return;
-
-    button.addEventListener('click', () => {
-        if (stage.dataset.loaded === 'true') return;
-        stage.dataset.loaded = 'true';
-        button.disabled = true;
-        button.textContent = 'Loading map…';
-
-        const styles = getComputedStyle(stage);
-        const availableWidth = stage.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
-        const mapWidth = Math.floor(Math.max(180, Math.min(650, availableWidth)));
-        const mapHeight = Math.round(mapWidth / 2);
-
-        window._wau = window._wau || [];
-        const queueIndex = window._wau.length;
-        window._wau.push(['map', 'jqx3tdk6lh', 'yhmap', String(mapWidth), String(mapHeight), 'textbook', 'default-blue']);
-
-        const marker = document.createElement('script');
-        marker.id = '_wauyhmap';
-        stage.appendChild(marker);
-
-        const widget = document.createElement('script');
-        widget.async = true;
-        widget.src = 'https://waust.at/m.js';
-        let timeoutId;
-        let settled = false;
-
-        const failMap = message => {
-            if (settled) return;
-            settled = true;
-            observer.disconnect();
-            window.clearTimeout(timeoutId);
-            marker.remove();
-            widget.remove();
-            const queuedWidget = window._wau[queueIndex];
-            if (queuedWidget && queuedWidget[2] === 'yhmap') window._wau.splice(queueIndex, 1);
-            if (Array.isArray(window.WAU_ren) && window.WAU_ren.length > queueIndex) {
-                window.WAU_ren.splice(queueIndex, 1);
-            }
-            stage.dataset.loaded = 'false';
-            button.disabled = false;
-            button.textContent = 'Try live visitor map again';
-            if (status) status.textContent = message;
-        };
-
-        const observer = new MutationObserver(() => {
-            const liveMap = Array.from(stage.children).find(child =>
-                child.tagName === 'SPAN' && child.querySelector('img')
-            );
-            if (!liveMap || settled) return;
-            settled = true;
-            observer.disconnect();
-            window.clearTimeout(timeoutId);
-            liveMap.classList.add('visitor-live-widget');
-            stage.classList.add('is-live');
-            if (status) status.textContent = 'Live, approximate locations are now loaded from Whos.amung.us. They represent only visitors who opt in to this separate map, not everyone in the total above.';
-        });
-        observer.observe(stage, { childList: true });
-
-        widget.addEventListener('load', () => {
-            if (status) status.textContent = 'Map service connected; waiting for live location data…';
-        });
-        widget.addEventListener('error', () => {
-            failMap('The location widget could not be loaded. The local privacy-friendly map remains visible.');
-        });
-        stage.appendChild(widget);
-        timeoutId = window.setTimeout(() => {
-            failMap('The location service did not return data in time. The local privacy-friendly map remains visible.');
-        }, 12000);
-    });
-}
-
 setupMobileNavigation();
 loadScholarSnapshot();
-loadVisitorCount();
-setupVisitorMap();
 
 // =========================================
 // Coverage Visualization (Honor Program)

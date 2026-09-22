@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Yongcheng Huang is a PhD candidate at TU Delft researching AI-enabled software engineering, code refactoring, and coding agents.">
-    <meta name="theme-color" content="#f4f8fa">
+    <meta name="theme-color" content="#0a0b0e">
     <script>document.documentElement.classList.replace('no-js', 'js');</script>
     <link rel="canonical" href="https://d4vidhuang.github.io/">
     <meta property="og:title" content="Yongcheng Huang · PhD Candidate at TU Delft">
@@ -15,60 +15,77 @@
     <title>Yongcheng Huang | PhD Candidate at TU Delft</title>
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="redesign.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>
 <body>
-    
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="container">
         <header>
-            <nav>
-                <div class="logo">YH.</div>
+            <nav aria-label="Primary navigation">
+                <a class="logo" href="#hero" aria-label="Yongcheng Huang, back to top">YH<span class="logo-dot">.</span><span class="logo-descriptor"> / TU Delft</span></a>
                 <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">Menu</button>
                 <div class="links" id="primary-navigation">
                     <a href="#about">About</a>
                     <a href="#research">Research</a>
                     <a href="#publications">Publications</a>
                     <a href="#service">Service</a>
-                    <a href="#visitors">Visitors</a>
-                    <a href="#contact">Contact</a>
+                    <a class="nav-contact" href="#contact">Let's connect <span aria-hidden="true">↗</span></a>
                 </div>
             </nav>
         </header>
 
-        <main>
+        <main id="main-content">
             <section id="hero">
                 <canvas id="bg-canvas"></canvas>
+                <div class="hero-atmosphere" aria-hidden="true"><div class="light-ribbon"></div><div class="light-ribbon light-ribbon-secondary"></div><div class="particle-field"></div></div>
                 <div class="hero-content">
-                    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> PhD Candidate · TU Delft</p>
-                    <h1 class="glitch" data-text="Yongcheng Huang">Yongcheng Huang</h1>
-                    <h2 class="subtitle">黄永橙</h2>
-                    <p class="hero-lede">I research how AI can understand, improve, and refactor software.</p>
-                    <p class="tagline">PhD candidate in the <strong>FUSE Lab</strong> and <strong>Software Engineering Research Group</strong> at Delft University of Technology.</p>
+                    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> PhD Candidate <span class="eyebrow-divider" aria-hidden="true">/</span> TU Delft</p>
+                    <h1>Yongcheng Huang<span class="hero-period">.</span></h1>
+                    <p class="subtitle" lang="zh-CN">黄永橙</p>
+                    <p class="hero-lede">Making AI for code <span>more dependable.</span></p>
+                    <p class="tagline">I study how language models and coding agents can understand, improve, and refactor software. Currently at <strong>FUSE Lab · TU Delft</strong>.</p>
                     <div class="hero-actions">
-                        <a href="#research" class="btn btn-primary">Explore my research</a>
-                        <a href="https://scholar.google.com/citations?user=C4xHgUMAAAAJ&amp;hl=en" target="_blank" rel="noreferrer" class="text-link">Google Scholar <span aria-hidden="true">↗</span></a>
+                        <a href="#research" class="btn btn-primary">Explore research <span aria-hidden="true">↗</span></a>
+                        <a href="https://scholar.google.com/citations?user=C4xHgUMAAAAJ&amp;hl=en" target="_blank" rel="noreferrer" class="btn btn-secondary">Google Scholar <span aria-hidden="true">↗</span></a>
+                    </div>
+                    <div class="hero-meta" aria-label="Research and location">
+                        <p><span>Research focus</span>AI-enabled software engineering</p>
+                        <p><span>Based in</span>Delft, the Netherlands</p>
                     </div>
                 </div>
-                <div class="hero-portrait-wrap">
-                    <div class="portrait-accent" aria-hidden="true"></div>
-                    <img class="hero-portrait" src="images/yongcheng-huang-2026.jpg" alt="Portrait of Yongcheng Huang" width="1200" height="1200">
-                    <p class="portrait-note">Delft, the Netherlands · 2026</p>
+                <div class="research-window" aria-label="Conceptual example of identifier recovery">
+                    <div class="window-topbar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>identifier_recovery.py</span><span class="window-language">Python</span></div>
+                    <div class="code-example code-before">
+                        <p class="code-caption"><span>01</span> Read the code</p>
+                        <pre><code><span class="syntax-keyword">def</span> <span class="code-identifier">f</span>(<span class="code-identifier">x</span>):
+    <span class="syntax-keyword">return</span> sum(<span class="code-identifier">x</span>) / len(<span class="code-identifier">x</span>)</code></pre>
+                    </div>
+                    <div class="code-transition"><span aria-hidden="true">↓</span><span>Recover intent</span><span class="transition-line" aria-hidden="true"></span></div>
+                    <div class="code-example code-after">
+                        <p class="code-caption"><span>02</span> Make intent explicit</p>
+                        <pre><code><span class="syntax-keyword">def</span> <span class="code-identifier">mean</span>(<span class="code-identifier">values</span>):
+    <span class="syntax-keyword">return</span> sum(<span class="code-identifier">values</span>) / len(<span class="code-identifier">values</span>)</code></pre>
+                    </div>
+                    <div class="window-footer"><span>Identifier recovery <span aria-hidden="true">·</span> Conceptual example</span><a href="#research" aria-label="Explore identifier recovery research">↗</a></div>
                 </div>
+                <a class="hero-scroll" href="#about"><span>Explore the work</span><span aria-hidden="true">↓</span></a>
             </section>
-
-            <!-- News Ticker Removed -->
 
             <section id="about">
                 <div class="section-header">
                     <p class="section-kicker">About</p>
-                    <h3>Building dependable AI for software work.</h3>
+                    <h2>Software. Intelligence.<br> A little curiosity.</h2>
                 </div>
                 <div class="two-column-layout">
                     <div class="col-left">
-                        <p class="intro-text">I am a PhD candidate in the <strong>FUSE Lab</strong> and <strong>Software Engineering Research Group (SERG)</strong> at <strong>Delft University of Technology</strong>. I study how language models and coding agents can make software refactoring more autonomous, verifiable, and useful to developers.</p>
+                        <div class="about-profile">
+                            <img src="images/yongcheng-huang-2026.jpg" alt="Portrait of Yongcheng Huang" width="1200" height="1200" loading="lazy">
+                            <div><p>Yongcheng Huang <span lang="zh-CN">黄永橙</span></p><span>PhD Candidate · TU Delft</span></div>
+                        </div>
+                        <p class="intro-text">I am a PhD candidate in the <strong>FUSE Lab</strong> and <strong>Software Engineering Research Group (SERG)</strong> at <strong>Delft University of Technology</strong>. My work asks how language models and coding agents can make software refactoring more autonomous, verifiable, and useful to developers.</p>
                         <div class="stats-row">
                             <div class="stat-item">
                                 <span class="stat-number">2</span>
@@ -118,8 +135,8 @@
             <section id="research">
                 <div class="section-header">
                     <p class="section-kicker">Research</p>
-                    <h3>AI-enabled software engineering, from models to agents.</h3>
-                    <p class="section-intro">My work connects generative models with concrete software maintenance tasks, with an emphasis on refactoring quality, evaluation, and developer control.</p>
+                    <h2>From understanding code<br> to improving it.</h2>
+                    <p class="section-intro">My research connects generative models with real software maintenance tasks. I focus on refactoring quality, evaluation, and keeping developers in control.</p>
                 </div>
                 <div class="research-interests-container">
                     <div class="interest-pill">Automated Code Refactoring</div>
@@ -129,9 +146,9 @@
                     <div class="interest-pill">Diffusion Language Models</div>
                 </div>
 
-                <div class="section-header" style="margin-top: 60px;">
-                    <p class="section-kicker">Selected work</p>
-                    <h3>Research you can explore.</h3>
+                <div class="selected-work-header">
+                    <h3>Selected research</h3>
+                    <p>Five projects. Interactive perspectives.</p>
                 </div>
                 <div class="research-list">
 
@@ -143,7 +160,7 @@
                             <h4>CoReFusion</h4>
                             <p>Refactoring as Denoising?</p>
                         </div>
-                        <div class="thumbnail-hint">Click to explore</div>
+                        <span class="thumbnail-hint" aria-hidden="true">↗</span>
                     </div>
 
                     <div class="animation-thumbnail" data-animation="dfusion" role="button" tabindex="0" aria-label="Explore the TUDelft Dfusion research visualization">
@@ -153,7 +170,7 @@
                             <h4>NTIRE@CVPR 2025</h4>
                             <p>Team TUDelft Dfusion</p>
                         </div>
-                        <div class="thumbnail-hint">Click to explore</div>
+                        <span class="thumbnail-hint" aria-hidden="true">↗</span>
                     </div>
 
                     <div class="animation-thumbnail" data-animation="taxonomy" role="button" tabindex="0" aria-label="Explore the multilingual code comments research visualization">
@@ -163,7 +180,7 @@
                             <h4>Multilingual Code Comments</h4>
                             <p>LLM Error Taxonomy Study</p>
                         </div>
-                        <div class="thumbnail-hint">Click to explore</div>
+                        <span class="thumbnail-hint" aria-hidden="true">↗</span>
                     </div>
 
                     <div class="animation-thumbnail" data-animation="babel" role="button" tabindex="0" aria-label="Explore the LLM of Babel research visualization">
@@ -173,7 +190,7 @@
                             <h4>LLM of Babel</h4>
                             <p>Multilingual Code Evaluation</p>
                         </div>
-                        <div class="thumbnail-hint">Click to explore</div>
+                        <span class="thumbnail-hint" aria-hidden="true">↗</span>
                     </div>
 
                     <div class="animation-thumbnail" data-animation="coverage" role="button" tabindex="0" aria-label="Explore the language coverage research visualization">
@@ -183,14 +200,9 @@
                             <h4>Language Coverage</h4>
                             <p>Grammar-Based LLM Analysis</p>
                         </div>
-                        <div class="thumbnail-hint">Click to explore</div>
+                        <span class="thumbnail-hint" aria-hidden="true">↗</span>
                     </div>
 
-                    <div class="research-item">
-                        <h4>ToBeContinued: A Smart Trigger Model for Code Completions</h4>
-                        <span class="meta">Ongoing research</span>
-                        <p>In this paper, we propose an intelligent trigger model that combines rule-based filtering with deep learning on telemetry and code context data to efficiently decide when to invoke a large language model for code completion, reducing unnecessary computations while enhancing developer productivity.</p>
-                    </div>
                 </div>
 
                 <!-- Animation Modal Overlay -->
@@ -427,7 +439,7 @@
                 <div class="section-header section-header-split">
                     <div>
                         <p class="section-kicker">Publications</p>
-                        <h3>Peer-reviewed work and theses.</h3>
+                        <h2>Publications &amp; theses.</h2>
                     </div>
                     <a class="text-link" href="https://scholar.google.com/citations?user=C4xHgUMAAAAJ&amp;hl=en" target="_blank" rel="noreferrer">Full Google Scholar profile <span aria-hidden="true">↗</span></a>
                 </div>
@@ -435,7 +447,7 @@
                 <aside class="scholar-overview" aria-labelledby="scholar-heading">
                     <div class="scholar-summary">
                         <p class="card-label" id="scholar-heading"><span class="status-dot" aria-hidden="true"></span> Google Scholar snapshot</p>
-                        <p class="scholar-copy">A daily workflow checks the public profile and keeps the last verified result when Scholar is unavailable.</p>
+                        <p class="scholar-copy">Citations and research impact, from my public profile.</p>
                         <p class="data-freshness" id="scholar-updated">Last verified 10 Sep 2026</p>
                     </div>
                     <div class="metric-grid">
@@ -517,7 +529,7 @@
             <section id="service">
                 <div class="section-header">
                     <p class="section-kicker">Academic service</p>
-                    <h3>Responsibilities beyond my own research.</h3>
+                    <h2>A shared pursuit.</h2>
                 </div>
                 <div class="service-list">
                     <a class="service-item" href="https://conf.researchr.org/home/icse-2027" target="_blank" rel="noreferrer">
@@ -544,7 +556,7 @@
             <section id="projects">
                 <div class="section-header">
                     <p class="section-kicker">Projects</p>
-                    <h3>Selected things I have helped build.</h3>
+                    <h2>Beyond the papers.</h2>
                 </div>
                 <div class="project-list">
                     <div class="project-item">
@@ -564,43 +576,17 @@
                 </div>
             </section>
 
-            <section id="visitors">
-                <div class="section-header section-header-split">
-                    <div>
-                        <p class="section-kicker">Visitors</p>
-                        <h3>Where this page reaches.</h3>
-                    </div>
-                    <div class="visitor-total" aria-live="polite">
-                        <span class="visitor-count" id="visitor-count">—</span>
-                        <span class="visitor-label">unique visits since this counter launched</span>
-                    </div>
-                </div>
-                <div class="visitor-map-card">
-                    <div class="visitor-map-stage" id="visitor-map-stage">
-                        <img src="images/visitor-map-base.svg" alt="Equal Earth world map shown before live visitor locations are loaded" width="2048" height="997" id="visitor-map-placeholder">
-                        <div class="visitor-map-control" id="visitor-map-control">
-                            <p>Live locations are off by default.</p>
-                            <button type="button" class="btn btn-primary" id="load-visitor-map">Load live visitor map</button>
-                        </div>
-                    </div>
-                    <div class="visitor-map-footer">
-                        <p id="visitor-status">The total uses <a href="https://counterapi.com/" target="_blank" rel="noreferrer">CounterAPI's anonymized visitor hash</a>. Loading the separate map sends page and device data to Whos.amung.us and its supporting services; map locations cover only people who opt in, not everyone in the total.</p>
-                        <a href="https://whos.amung.us/legal/privacy/" target="_blank" rel="noreferrer">Widget privacy policy <span aria-hidden="true">↗</span></a>
-                    </div>
-                </div>
-            </section>
-
             <section id="contact">
                 <div class="section-header">
                     <p class="section-kicker">Contact</p>
-                    <h3>Let’s talk about software engineering and AI.</h3>
+                    <h2>Let’s make software work better.</h2>
                     <p class="section-intro">For research conversations, collaborations, or seminar ideas, email is the most direct route.</p>
                 </div>
                 <div class="social-links">
-                    <a href="mailto:y.huang-12@tudelft.nl" class="btn btn-primary">Email me</a>
-                    <a href="https://github.com/D4vidHuang" target="_blank" rel="noreferrer" class="btn">GitHub</a>
-                    <a href="https://www.linkedin.com/in/yongcheng-huang-26b14a263/" target="_blank" rel="noreferrer" class="btn">LinkedIn</a>
-                    <a href="https://orcid.org/0000-0002-7987-6317" target="_blank" rel="noreferrer" class="btn">ORCID</a>
+                    <a href="mailto:y.huang-12@tudelft.nl" class="contact-email">y.huang-12@tudelft.nl <span aria-hidden="true">↗</span></a>
+                    <a href="https://github.com/D4vidHuang" target="_blank" rel="noreferrer" class="contact-social">GitHub</a>
+                    <a href="https://www.linkedin.com/in/yongcheng-huang-26b14a263/" target="_blank" rel="noreferrer" class="contact-social">LinkedIn</a>
+                    <a href="https://orcid.org/0000-0002-7987-6317" target="_blank" rel="noreferrer" class="contact-social">ORCID</a>
                 </div>
             </section>
         </main>

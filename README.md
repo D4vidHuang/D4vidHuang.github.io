@@ -4,11 +4,10 @@ This is the source code for my personal website hosted on GitHub Pages.
 
 ## Features
 
-- Light editorial design based on TU Delft cyan.
-- Responsive profile, research, publication, service, project, and visitor sections.
+- Dark editorial design inspired by DeepSeek Harness, with full-width blue light, restrained typography, and an identifier-recovery illustration.
+- Responsive profile, research, publication, service, and project sections.
 - Interactive research visualizations with keyboard-accessible launch controls.
 - A last-known-good Google Scholar snapshot refreshed daily by GitHub Actions.
-- An anonymized unique-visitor total and a separate opt-in live visitor map.
 
 ## Scholar data
 
@@ -24,10 +23,12 @@ For reliable hosted refreshes, add a GitHub Actions repository secret named `SER
 
 ## Local Development
 
+The page keeps the existing visualization styles in `style.css`. The current site-wide visual system lives in `redesign.css`, which loads after it on both the homepage and privacy page.
+
 To preview the site locally:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000` in your browser. Visitor counts are disabled on localhost so previews do not affect the public total.
+Then open `http://localhost:8000` in your browser.
